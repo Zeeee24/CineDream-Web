@@ -1085,6 +1085,10 @@ img {
 }
 
 /* ========== PLAYER (Inline, Scrollable — cineby.cc style) ========== */
+body.player-active {
+  overflow: hidden;
+}
+
 body.player-active .header {
   display: none !important;
 }
@@ -1364,10 +1368,18 @@ body.player-active .header {
 
 /* ========== PLAYER RESPONSIVE: MOBILE (< 768px) ========== */
 @media (max-width: 767px) {
+  body.player-active .player-section {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
   .player-viewport {
-    height: 56.25vw;
-    min-height: 200px;
-    max-height: 45vh;
+    height: 100%;
+    max-height: none;
   }
 }
 
