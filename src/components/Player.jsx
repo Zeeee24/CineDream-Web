@@ -95,7 +95,8 @@ export default function Player({ imdbId, mediaType, season, episode, onClose }) 
           title={`Player - ${current.name}`}
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture"
-          referrerPolicy="no-referrer"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+          referrerPolicy="origin"
           className="player-iframe"
         />
       </div>
