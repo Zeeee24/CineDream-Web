@@ -6,6 +6,7 @@ export function getYouTubeEmbedUrl(key, opts = {}) {
     rel: '0',
     modestbranding: '1',
     playsinline: '1',
+    origin: window.location.origin,
     ...opts.extra,
   });
   return `https://www.youtube.com/embed/${key}?${params.toString()}`;

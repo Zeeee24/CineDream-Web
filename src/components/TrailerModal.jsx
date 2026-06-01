@@ -42,8 +42,7 @@ export default function TrailerModal({ videoKey, onClose }) {
           title="Trailer"
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-          referrerPolicy="no-referrer"
+          referrerPolicy="origin"
           className="trailer-iframe"
         />
       </div>
