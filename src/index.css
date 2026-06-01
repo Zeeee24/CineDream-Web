@@ -469,6 +469,8 @@ img {
 /* ========== SEARCH PAGE ========== */
 .search-page {
   padding: 24px 0;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .search-header {
@@ -478,6 +480,7 @@ img {
 .search-input-wrapper {
   position: relative;
   margin-bottom: 16px;
+  max-width: 800px;
 }
 
 .search-icon {
@@ -980,6 +983,111 @@ img {
   }
 }
 
+/* ========== RESPONSIVE: LAPTOP ========== */
+@media (min-width: 769px) and (max-width: 1199px) {
+  :root {
+    --content-padding: 32px;
+    --header-height: 68px;
+  }
+
+  .hero-banner {
+    height: 75vh;
+    min-height: 450px;
+  }
+
+  .hero-content {
+    max-width: 650px;
+  }
+
+  .hero-title {
+    font-size: 2.8rem;
+  }
+
+  .hero-description {
+    font-size: 1.05rem;
+  }
+
+  .media-card {
+    width: 180px;
+  }
+
+  .scroll-row-content {
+    gap: 12px;
+  }
+
+  .scroll-row-title {
+    font-size: 1.4rem;
+  }
+
+  .detail-poster-side {
+    width: 280px;
+  }
+
+  .detail-title {
+    font-size: 2.6rem;
+  }
+
+  .trailer-modal {
+    width: 85vw;
+    max-width: 1000px;
+  }
+}
+
+/* ========== RESPONSIVE: DESKTOP ========== */
+@media (min-width: 1200px) and (max-width: 1439px) {
+  :root {
+    --content-padding: 48px;
+    --header-height: 72px;
+  }
+
+  .hero-banner {
+    height: 80vh;
+    min-height: 500px;
+  }
+
+  .hero-content {
+    max-width: 700px;
+  }
+
+  .hero-title {
+    font-size: 3.2rem;
+  }
+
+  .hero-description {
+    font-size: 1.1rem;
+  }
+
+  .media-card {
+    width: 190px;
+  }
+
+  .scroll-row-content {
+    gap: 14px;
+  }
+
+  .scroll-row-title {
+    font-size: 1.5rem;
+  }
+
+  .detail-top {
+    gap: 40px;
+    padding-bottom: 50px;
+  }
+
+  .detail-poster-side {
+    width: 300px;
+  }
+
+  .detail-title {
+    font-size: 2.8rem;
+  }
+
+  .trailer-modal {
+    width: 80vw;
+    max-width: 1100px;
+  }
+}
+
 /* ========== RESPONSIVE: MOBILE ========== */
 @media (max-width: 768px) {
   :root {
@@ -1090,15 +1198,64 @@ img {
 
 /* ========== LARGE SCREENS ========== */
 @media (min-width: 1440px) {
-  .hero-title {
-    font-size: 3.5rem;
+  :root {
+    --content-padding: 64px;
+    --header-height: 76px;
   }
 
-  .detail-title {
-    font-size: 3rem;
+  .hero-banner {
+    height: 85vh;
+    min-height: 600px;
+  }
+
+  .hero-content {
+    max-width: 800px;
+  }
+
+  .hero-title {
+    font-size: 3.8rem;
+  }
+
+  .hero-description {
+    font-size: 1.15rem;
   }
 
   .media-card {
-    width: 200px;
+    width: 210px;
+  }
+
+  .scroll-row-content {
+    gap: 16px;
+  }
+
+  .scroll-row-title {
+    font-size: 1.6rem;
+  }
+
+  .detail-top {
+    gap: 48px;
+    padding-bottom: 60px;
+  }
+
+  .detail-poster-side {
+    width: 320px;
+  }
+
+  .detail-title {
+    font-size: 3.2rem;
+  }
+
+  .trailer-modal {
+    width: 75vw;
+    max-width: 1200px;
+  }
+
+  .cast-card {
+    width: 140px;
+  }
+
+  .cast-photo {
+    width: 120px;
+    height: 120px;
   }
 }
