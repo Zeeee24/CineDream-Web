@@ -12,6 +12,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const overlayRef = useRef(null);
+  const serverPanelRef = useRef(null);
 
   const handleClose = useCallback(() => {
     try {
@@ -81,12 +82,21 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     };
   }, [handleClose, showServerPanel]);
 
-  const handleOverlayClick = useCallback((e) => {
-    if (e.target === overlayRef.current) {
-      if (showServerPanel) setShowServerPanel(false);
-      else handleClose();
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (showServerPanel && serverPanelRef.current && !serverPanelRef.current.contains(e.target)) {
+        setShowServerPanel(false);
+      }
     }
-  }, [handleClose, showServerPanel]);
+    if (showServerPanel) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showServerPanel]);
 
   if (!imdbId && !tmdbId) return null;
 
@@ -102,7 +112,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }
 
   return (
-    <div ref={overlayRef} className="player-overlay" onClick={handleOverlayClick}>
+    <div ref={overlayRef} className="player-overlay">
       <div className="player-container">
         <div className="player-topbar">
           <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
@@ -130,7 +140,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         </div>
 
         {showServerPanel && (
-          <div className="player-server-panel">
+          <div ref={serverPanelRef} className="player-server-panel">
             <div className="player-server-panel-header">Select Server</div>
             <div className="player-server-list">
               {allServers.map((s, i) => (
@@ -145,7 +155,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                     {s.label}
                   </span>
                   {i === activeServer && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
