@@ -7,7 +7,7 @@ import Detail from './pages/Detail';
 
 export default function App() {
   return (
-    <BrowserRouter basename="/cinedream">
+    <BrowserRouter basename="/CineDream-Web">
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -26,7 +26,7 @@ function NotFound() {
     <div className="empty-page">
       <h1>404</h1>
       <p>Page not found</p>
-      <a href="/cinedream/" className="btn btn-primary">Go Home</a>
+      <a href="/CineDream-Web/" className="btn btn-primary">Go Home</a>
     </div>
   );
 }
