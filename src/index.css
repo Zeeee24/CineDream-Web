@@ -1085,10 +1085,6 @@ img {
 }
 
 /* ========== PLAYER (Inline, Scrollable — cineby.cc style) ========== */
-body.player-active {
-  overflow: hidden;
-}
-
 body.player-active .header {
   display: none !important;
 }
