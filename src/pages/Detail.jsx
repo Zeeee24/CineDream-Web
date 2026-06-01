@@ -6,6 +6,7 @@ import { getYouTubeThumbnail } from '../services/youtube';
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
+import Player from '../components/Player';
 import { SkeletonHero } from '../components/Skeleton';
 
 export default function Detail() {
@@ -16,7 +17,9 @@ export default function Detail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
 
   const isMovie = type === 'movie';
 
@@ -26,7 +29,10 @@ export default function Detail() {
       try {
         const details = isMovie ? await getMovieDetails(id) : await getTVDetails(id);
         setData(details);
-        if (searchParams.get('autoplay') === 'true') {
+        if (searchParams.get('play') === 'true') {
+          setShowPlayer(true);
+        }
+        if (searchParams.get('trailer') === 'true') {
           setShowTrailer(true);
         }
       } catch (err) {
@@ -47,6 +53,7 @@ export default function Detail() {
     );
   }
 
+  const imdbId = isMovie ? (data.imdb_id || null) : (data.external_ids?.imdb_id || null);
   const title = data.title || data.name || '';
   const backdropUrl = img.backdrop(data.backdrop_path, 'original');
   const posterUrl = img.poster(data.poster_path, isTV ? 'w500' : 'w342');
@@ -66,7 +73,7 @@ export default function Detail() {
   const seasons = data.seasons || [];
 
   function handlePlayNow() {
-    setShowTrailer(true);
+    setShowPlayer(true);
   }
 
   function handleKeyDown(e) {
@@ -100,7 +107,7 @@ export default function Detail() {
                 <span key={g.id} className="genre-tag">{g.name}</span>
               ))}
             </div>
-            {data.tagline && <p className="detail-tagline">"{data.tagline}"</p>}
+            {data.tagline && <p className="detail-tagline">&quot;{data.tagline}&quot;</p>}
             <p className="detail-overview">{data.overview}</p>
 
             {isTV && seasons.length > 0 && (
@@ -109,11 +116,22 @@ export default function Detail() {
                   <select
                     className="season-select"
                     value={selectedSeason}
-                    onChange={(e) => { setSelectedSeason(Number(e.target.value)); }}
+                    onChange={(e) => { setSelectedSeason(Number(e.target.value)); setSelectedEpisode(1); }}
                   >
                     {seasons.filter(s => s.season_number > 0).map((s) => (
                       <option key={s.id} value={s.season_number}>
                         Season {s.season_number}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="season-select"
+                    value={selectedEpisode}
+                    onChange={(e) => setSelectedEpisode(Number(e.target.value))}
+                  >
+                    {Array.from({ length: seasons.find(s => s.season_number === selectedSeason)?.episode_count || 1 }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        Episode {i + 1}
                       </option>
                     ))}
                   </select>
@@ -133,6 +151,17 @@ export default function Detail() {
                 </svg>
                 Play Now
               </button>
+              {trailerKey && (
+                <button
+                  className="btn btn-secondary btn-large"
+                  onClick={() => setShowTrailer(true)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                  </svg>
+                  Trailer
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -185,7 +214,31 @@ export default function Detail() {
         )}
       </div>
 
-      {showTrailer && (
+      {showPlayer && imdbId && (
+        <Player
+          imdbId={imdbId}
+          mediaType={type}
+          season={isTV ? selectedSeason : undefined}
+          episode={isTV ? selectedEpisode : undefined}
+          onClose={() => setShowPlayer(false)}
+        />
+      )}
+
+      {showPlayer && !imdbId && (
+        <div className="trailer-modal-overlay" onClick={() => setShowPlayer(false)}>
+          <div className="trailer-modal" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="#ff4444">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <p style={{ color: 'white', textAlign: 'center' }}>IMDB ID not available for this title. Try watching the trailer instead.</p>
+            <button className="btn btn-primary" onClick={() => { setShowPlayer(false); if (trailerKey) setShowTrailer(true); }}>
+              Watch Trailer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTrailer && trailerKey && (
         <TrailerModal videoKey={trailerKey} onClose={() => setShowTrailer(false)} />
       )}
     </div>

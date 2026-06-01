@@ -72,13 +72,13 @@ export async function getBollywood() {
 
 export async function getMovieDetails(id) {
   return fetchWithCache(`/movie/${id}`, {
-    append_to_response: 'credits,videos,similar,recommendations',
+    append_to_response: 'credits,videos,similar,recommendations,external_ids',
   });
 }
 
 export async function getTVDetails(id) {
   return fetchWithCache(`/tv/${id}`, {
-    append_to_response: 'credits,videos,similar,recommendations',
+    append_to_response: 'credits,videos,similar,recommendations,external_ids',
   });
 }
 

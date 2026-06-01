@@ -35,7 +35,7 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   const runtime = item.runtime || null;
 
   function handlePlay() {
-    navigate(`/${mediaType}/${item.id}?autoplay=true`);
+    navigate(`/${mediaType}/${item.id}?play=true`);
   }
 
   function handleDetails() {
