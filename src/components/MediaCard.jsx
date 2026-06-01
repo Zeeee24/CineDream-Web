@@ -3,7 +3,7 @@ import { img } from '../services/tmdb';
 import { useDevice } from '../hooks/useDevice';
 import { useNavigate } from 'react-router-dom';
 
-export default function MediaCard({ item, index, showRank }) {
+export default function MediaCard({ item, index, showRank, progress }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const { isTV } = useDevice();
   const navigate = useNavigate();
@@ -24,6 +24,8 @@ export default function MediaCard({ item, index, showRank }) {
       handleClick();
     }
   }
+
+  const progressPct = progress > 0 ? Math.min((progress.progressSeconds / progress.durationSeconds) * 100, 100) : 0;
 
   return (
     <div
@@ -50,6 +52,11 @@ export default function MediaCard({ item, index, showRank }) {
           />
         ) : (
           <div className="card-poster skeleton" />
+        )}
+        {progressPct > 0 && (
+          <div className="card-progress-bar">
+            <div className="card-progress-fill" style={{ width: `${progressPct}%` }} />
+          </div>
         )}
         <div className="card-overlay">
           {rating && (

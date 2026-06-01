@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
+import { addToHistory } from '../services/watchHistory';
 
 const allServers = getServers();
 
-export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, onClose }) {
+export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, onClose }) {
   const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
   const [showServerPanel, setShowServerPanel] = useState(false);
@@ -11,6 +12,21 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const overlayRef = useRef(null);
+
+  const handleClose = useCallback(() => {
+    addToHistory({
+      tmdbId: Number(tmdbId),
+      title: title || 'Untitled',
+      posterPath: posterPath || null,
+      backdropPath: backdropPath || null,
+      contentType: mediaType === 'tv' ? 'TV' : 'Movie',
+      season: season || null,
+      episode: episode || null,
+      progressSeconds: 1,
+      durationSeconds: 3600,
+    });
+    onClose();
+  }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
 
   useEffect(() => {
     checkAllServers().then((h) => {
@@ -24,7 +40,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     function handleKey(e) {
       if (e.key === 'Escape') {
         if (showServerPanel) setShowServerPanel(false);
-        else onClose();
+        else handleClose();
       }
     }
     document.addEventListener('keydown', handleKey);
@@ -32,11 +48,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleKey);
     };
-  }, [onClose, showServerPanel]);
+  }, [handleClose, showServerPanel]);
 
   const handleOverlayClick = useCallback((e) => {
-    if (e.target === overlayRef.current) onClose();
-  }, [onClose]);
+    if (e.target === overlayRef.current) handleClose();
+  }, [handleClose]);
 
   if (!imdbId && !tmdbId) return null;
 
@@ -55,7 +71,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     <div ref={overlayRef} className="player-overlay" onClick={handleOverlayClick}>
       <div className="player-container">
         <div className="player-topbar">
-          <button className="player-topbar-btn" onClick={onClose} aria-label="Close">
+          <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

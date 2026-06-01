@@ -8,6 +8,7 @@ import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
 import Player from '../components/Player';
 import { SkeletonHero } from '../components/Skeleton';
+import { addToHistory } from '../services/watchHistory';
 
 export default function Detail() {
   const { type, id } = useParams();
@@ -29,6 +30,15 @@ export default function Detail() {
       try {
         const details = isMovie ? await getMovieDetails(id) : await getTVDetails(id);
         setData(details);
+        addToHistory({
+          tmdbId: Number(id),
+          title: details.title || details.name || '',
+          posterPath: details.poster_path,
+          backdropPath: details.backdrop_path,
+          contentType: isMovie ? 'Movie' : 'TV',
+          progressSeconds: 0,
+          durationSeconds: details.runtime ? details.runtime * 60 : 0,
+        });
         if (searchParams.get('play') === 'true') {
           setShowPlayer(true);
         }
@@ -221,6 +231,9 @@ export default function Detail() {
           mediaType={type}
           season={isTV ? selectedSeason : undefined}
           episode={isTV ? selectedEpisode : undefined}
+          title={title}
+          posterPath={data.poster_path}
+          backdropPath={data.backdrop_path}
           onClose={() => setShowPlayer(false)}
         />
       )}
