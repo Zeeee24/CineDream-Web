@@ -1094,9 +1094,12 @@ img {
   align-items: stretch;
   justify-content: center;
   animation: fadeIn 0.15s ease;
-  /* iPhone safe areas */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  overscroll-behavior: contain;
+  touch-action: manipulation;
 }
 
 .player-container {
@@ -1118,15 +1121,18 @@ img {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+  padding-top: calc(10px + env(safe-area-inset-top));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 60%, transparent);
 }
 
 .player-topbar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   color: white;
   font-size: 0.85rem;
@@ -1175,12 +1181,13 @@ img {
   left: 0;
   right: 0;
   z-index: 20;
-  max-height: 60vh;
+  max-height: 55vh;
   background: #111;
   border-radius: 16px 16px 0 0;
   border-top: 1px solid #2a2a2a;
   overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .player-server-panel-header {
@@ -1193,6 +1200,7 @@ img {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  position: relative;
 }
 
 .player-server-panel-header::before {
@@ -1323,6 +1331,7 @@ img {
 
 .player-iframe {
   width: 100%;
+  height: 100%;
   flex: 1;
   border: none;
   background: #000;
@@ -1351,12 +1360,13 @@ img {
 @media (min-width: 768px) and (max-width: 1024px) {
   .player-topbar {
     padding: 14px 20px;
+    padding-top: 14px;
     gap: 12px;
   }
 
   .player-topbar-btn {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
   }
 
   .player-topbar-title {
@@ -1373,6 +1383,7 @@ img {
     border-radius: 14px;
     border: 1px solid #2a2a2a;
     animation: slideDown 0.2s ease;
+    padding-bottom: 0;
   }
 
   @keyframes slideDown {
@@ -1413,12 +1424,13 @@ img {
 @media (min-width: 769px) and (max-width: 1199px) {
   .player-topbar {
     padding: 16px 24px;
+    padding-top: 16px;
     gap: 14px;
   }
 
   .player-topbar-btn {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.4);
   }
@@ -1454,6 +1466,7 @@ img {
     border-radius: 14px;
     border: 1px solid #2a2a2a;
     animation: slideDown 0.2s ease;
+    padding-bottom: 0;
   }
 
   @keyframes slideDown {
@@ -1500,13 +1513,14 @@ img {
 @media (min-width: 1200px) {
   .player-topbar {
     padding: 18px 32px;
+    padding-top: 18px;
     gap: 16px;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
   }
 
   .player-topbar-btn {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.35);
   }
@@ -1542,6 +1556,7 @@ img {
     border-radius: 14px;
     border: 1px solid #2a2a2a;
     animation: slideDown 0.2s ease;
+    padding-bottom: 0;
   }
 
   @keyframes slideDown {
@@ -1590,6 +1605,7 @@ img {
 @media (min-width: 1440px) {
   .player-topbar {
     padding: 20px 48px;
+    padding-top: 20px;
   }
 
   .player-server-panel {
@@ -1665,6 +1681,147 @@ img {
   box-shadow: 0 0 24px rgba(229, 9, 20, 0.5);
 }
 
+/* ========== RESPONSIVE: SMALL PHONES (< 375px - iPhone SE, older Android) ========== */
+@media (max-width: 374px) {
+  :root {
+    --content-padding: 12px;
+    --header-height: 50px;
+  }
+
+  .hero-banner {
+    height: 50vh;
+    min-height: 280px;
+  }
+
+  .hero-title {
+    font-size: 1.4rem;
+  }
+
+  .hero-description {
+    font-size: 0.78rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .hero-actions {
+    gap: 8px;
+  }
+
+  .btn-large {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+
+  .media-card {
+    width: 110px;
+  }
+
+  .detail-poster-side {
+    width: 130px;
+  }
+
+  .detail-title {
+    font-size: 1.3rem;
+  }
+
+  .detail-overview {
+    font-size: 0.82rem;
+  }
+
+  .player-topbar {
+    padding: 8px 8px;
+    padding-top: calc(8px + env(safe-area-inset-top));
+    gap: 4px;
+  }
+
+  .player-topbar-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .player-topbar-title {
+    font-size: 0.78rem;
+  }
+
+  .player-server-panel {
+    max-height: 50vh;
+  }
+
+  .player-server-item {
+    padding: 12px 10px;
+    min-height: 48px;
+  }
+
+  .scroll-row-content {
+    gap: 6px;
+  }
+
+  .scroll-row {
+    margin-bottom: 24px;
+  }
+
+  .scroll-row-title {
+    font-size: 1.1rem;
+  }
+
+  .cast-card {
+    width: 80px;
+  }
+
+  .cast-photo {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* ========== RESPONSIVE: ANDROID LANDSCAPE ========== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .player-topbar {
+    padding: 6px 12px;
+    padding-top: 6px;
+    gap: 6px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 80%);
+  }
+
+  .player-topbar-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .player-topbar-title {
+    font-size: 0.8rem;
+  }
+
+  .player-server-panel {
+    max-height: 85vh;
+    top: 48px;
+  }
+
+  .player-loading {
+    gap: 8px;
+  }
+
+  .player-loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+
+  .player-loading span {
+    font-size: 0.75rem;
+  }
+
+  .hero-banner {
+    height: 70vh;
+  }
+
+  .detail-backdrop-wrapper {
+    height: 60vh;
+  }
+}
+
 /* ========== RESPONSIVE: TABLET ========== */
 @media (max-width: 1024px) {
   .hero-title {
@@ -1688,6 +1845,15 @@ img {
 
   .detail-title {
     font-size: 2rem;
+  }
+
+  .detail-backdrop-wrapper {
+    height: 55vh;
+    min-height: 300px;
+  }
+
+  .detail-content {
+    margin-top: -140px;
   }
 }
 
@@ -1825,8 +1991,8 @@ img {
   }
 
   .hero-banner {
-    height: 60vh;
-    min-height: 350px;
+    height: 55vh;
+    min-height: 320px;
   }
 
   .hero-title {
@@ -1845,12 +2011,70 @@ img {
     width: 130px;
   }
 
+  .detail-backdrop-wrapper {
+    height: 45vh;
+    min-height: 260px;
+  }
+
+  .detail-content {
+    margin-top: -100px;
+  }
+
+  .detail-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding-bottom: 24px;
+  }
+
   .detail-poster-side {
-    width: 160px;
+    width: 150px;
+  }
+
+  .detail-poster {
+    border-radius: 10px;
   }
 
   .detail-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+
+  .detail-meta {
+    font-size: 0.85rem;
+  }
+
+  .detail-genres {
+    justify-content: center;
+  }
+
+  .genre-tag {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+  }
+
+  .detail-overview {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .detail-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-large {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+
+  .episode-selectors {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .season-select {
+    width: 100%;
   }
 
   .trailer-modal {
@@ -1862,13 +2086,91 @@ img {
     border-radius: 0;
   }
 
+  .trailer-preview {
+    border-radius: 8px;
+  }
+
+  .trailer-play-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .trailer-play-btn svg {
+    width: 32px;
+    height: 32px;
+  }
+
   .cast-card {
-    width: 100px;
+    width: 90px;
   }
 
   .cast-photo {
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .cast-name {
+    font-size: 0.7rem;
+  }
+
+  .cast-character {
+    font-size: 0.65rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .scroll-row-title {
+    font-size: 1.1rem;
+  }
+
+  .scroll-arrow {
+    display: none;
+  }
+
+  .scroll-row-content {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .scroll-row-content > * {
+    scroll-snap-align: start;
+  }
+
+  .media-card:active {
+    transform: scale(0.96);
+  }
+
+  .media-card:hover {
+    transform: none;
+  }
+
+  .genre-tag:active {
+    transform: scale(0.96);
+  }
+
+  .btn:active {
+    transform: scale(0.96);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .trailer-preview:active {
+    transform: scale(0.98);
+  }
+
+  .cast-card:active {
+    transform: scale(0.96);
   }
 }
 

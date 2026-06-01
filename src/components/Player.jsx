@@ -41,22 +41,52 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     });
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+
     function handleKey(e) {
       if (e.key === 'Escape') {
         if (showServerPanel) setShowServerPanel(false);
         else handleClose();
+        return;
+      }
+      if (showServerPanel && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        setActiveServer((prev) => {
+          if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
+          return (prev - 1 + allServers.length) % allServers.length;
+        });
+      }
+      if (showServerPanel && e.key === 'Enter') {
+        setIframeKey((k) => k + 1);
+        setLoading(true);
+        setLoadError(false);
+        setShowServerPanel(false);
       }
     }
+
+    window.history.pushState({ playerOpen: true }, '');
+    function handlePopState() {
+      if (showServerPanel) setShowServerPanel(false);
+      else handleClose();
+    }
+
+    window.addEventListener('popstate', handlePopState);
     document.addEventListener('keydown', handleKey);
+
     return () => {
       document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
   }, [handleClose, showServerPanel]);
 
   const handleOverlayClick = useCallback((e) => {
-    if (e.target === overlayRef.current) handleClose();
-  }, [handleClose]);
+    if (e.target === overlayRef.current) {
+      if (showServerPanel) setShowServerPanel(false);
+      else handleClose();
+    }
+  }, [handleClose, showServerPanel]);
 
   if (!imdbId && !tmdbId) return null;
 
