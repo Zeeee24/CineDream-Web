@@ -13,7 +13,13 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const overlayRef = useRef(null);
 
   useEffect(() => {
-    checkAllServers().then(setHealth);
+    checkAllServers().then((h) => {
+      setHealth(h);
+      if (h[allServers[0].id] === false) {
+        const firstOnline = allServers.findIndex((s) => h[s.id] !== false);
+        if (firstOnline > 0) setActiveServer(firstOnline);
+      }
+    });
     document.body.style.overflow = 'hidden';
     function handleKey(e) {
       if (e.key === 'Escape') {
