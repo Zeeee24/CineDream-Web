@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const BASE = 'https://apis.justwatch.com/contentpartner/v2/content/providers/locale';
-
 export async function getProviders(tmdbId, mediaType = 'movie', country = 'IN') {
   try {
     const { data } = await axios.get(

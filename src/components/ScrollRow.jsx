@@ -7,8 +7,6 @@ export default function ScrollRow({ title, items = [], loading, showRank = false
   const { ref, showLeft, showRight, scrollLeft, scrollRight } = useHorizontalScroll();
   const { isTV } = useDevice();
 
-  const colsPerRow = isTV ? 8 : undefined;
-
   return (
     <section className="scroll-row">
       <div className="scroll-row-header">

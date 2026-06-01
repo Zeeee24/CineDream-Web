@@ -3,7 +3,7 @@ import { img } from '../services/tmdb';
 import { useDevice } from '../hooks/useDevice';
 import { useNavigate } from 'react-router-dom';
 
-export default function MediaCard({ item, index, showRank, type = 'poster' }) {
+export default function MediaCard({ item, index, showRank }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const { isTV } = useDevice();
   const navigate = useNavigate();

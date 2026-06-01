@@ -1,8 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { searchMulti, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import { useDevice } from '../hooks/useDevice';
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
 
 export default function Search() {
   const [query, setQuery] = useState('');
@@ -12,9 +20,32 @@ export default function Search() {
   const [genreFilter, setGenreFilter] = useState('');
   const [genres, setGenres] = useState([]);
   const [genresLoading, setGenresLoading] = useState(true);
-  const { isTV, isMobile, isTablet, isDesktop, width } = useDevice();
+  const { isTV, isTablet, isDesktop } = useDevice();
 
   const cols = isTV ? 8 : isDesktop ? 6 : isTablet ? 4 : 2;
+
+  const doSearchRef = useRef(
+    debounce(async (q, setResults, setLoading) => {
+      if (!q.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const data = await searchMulti(q);
+        const items = (data.results || []).filter(
+          (r) => r.media_type === 'movie' || r.media_type === 'tv'
+        );
+        setResults(items);
+      } catch (err) {
+        console.error('Search failed:', err);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300)
+  ).current;
 
   useEffect(() => {
     async function loadGenres() {
@@ -32,39 +63,11 @@ export default function Search() {
     loadGenres();
   }, []);
 
-  const doSearch = useCallback(
-    debounce(async (q) => {
-      if (!q.trim()) {
-        setResults([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const data = await searchMulti(q);
-        let items = (data.results || []).filter(
-          (r) => r.media_type === 'movie' || r.media_type === 'tv'
-        );
-        setResults(items);
-      } catch (err) {
-        console.error('Search failed:', err);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 300),
-    []
-  );
-
   function handleQueryChange(e) {
     const val = e.target.value;
     setQuery(val);
     setLoading(true);
-    doSearch(val);
-  }
-
-  function handleFilterChange(f) {
-    setFilter(f);
+    doSearchRef(val, setResults, setLoading);
   }
 
   let filtered = results;
@@ -102,7 +105,7 @@ export default function Search() {
             <button
               key={f}
               className={`chip ${filter === f ? 'active' : ''}`}
-              onClick={() => handleFilterChange(f)}
+              onClick={() => setFilter(f)}
             >
               {f === 'all' ? 'All' : f === 'movies' ? 'Movies' : 'TV Shows'}
             </button>
@@ -139,7 +142,7 @@ export default function Search() {
             <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
             </svg>
-            <p>No results found for "{query}"</p>
+            <p>No results found for &quot;{query}&quot;</p>
           </div>
         ) : (
           <div className="empty-state">
@@ -149,12 +152,4 @@ export default function Search() {
       </div>
     </div>
   );
-}
-
-function debounce(fn, delay) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
 }

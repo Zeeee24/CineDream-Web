@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
-import { formatDetailInfo, getYear, getCertification, getTVCertification, truncate } from '../utils/helpers';
-import { getYouTubeEmbedUrl, getYouTubeThumbnail } from '../services/youtube';
+import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
+import { getYouTubeThumbnail } from '../services/youtube';
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
@@ -11,14 +11,12 @@ import { SkeletonHero } from '../components/Skeleton';
 export default function Detail() {
   const { type, id } = useParams();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { isTV } = useDevice();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
-  const [selectedEpisode, setSelectedEpisode] = useState(1);
 
   const isMovie = type === 'movie';
 
@@ -111,7 +109,7 @@ export default function Detail() {
                   <select
                     className="season-select"
                     value={selectedSeason}
-                    onChange={(e) => { setSelectedSeason(Number(e.target.value)); setSelectedEpisode(1); }}
+                    onChange={(e) => { setSelectedSeason(Number(e.target.value)); }}
                   >
                     {seasons.filter(s => s.season_number > 0).map((s) => (
                       <option key={s.id} value={s.season_number}>

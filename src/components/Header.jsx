@@ -1,10 +1,9 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { useDevice } from '../hooks/useDevice';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const { isTV } = useDevice();
 
   const links = [

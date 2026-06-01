@@ -11,7 +11,7 @@ export default function Browse() {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genresLoading, setGenresLoading] = useState(true);
-  const { isTV, isMobile, isTablet, isDesktop } = useDevice();
+  const { isTV, isTablet, isDesktop } = useDevice();
 
   const cols = isTV ? 8 : isDesktop ? 6 : isTablet ? 4 : 2;
 
@@ -21,6 +21,7 @@ export default function Browse() {
       try {
         const [m, t] = await Promise.all([getMovieGenres(), getTVGenres()]);
         setGenres(type === 'movie' ? m : t);
+        setGenreId('');
       } catch (err) {
         console.error('Failed to load genres:', err);
       } finally {
@@ -28,7 +29,6 @@ export default function Browse() {
       }
     }
     loadGenres();
-    setGenreId('');
   }, [type]);
 
   useEffect(() => {
