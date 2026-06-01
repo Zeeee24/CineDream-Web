@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { addToHistory } from '../services/watchHistory';
 
@@ -11,6 +11,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const playerRef = useRef(null);
 
   const handleClose = useCallback(() => {
     try {
@@ -32,6 +33,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
 
   useEffect(() => {
+    document.body.classList.add('player-active');
     checkAllServers().then((h) => {
       setHealth(h);
       if (h[allServers[0].id] === false) {
@@ -39,8 +41,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         if (firstOnline > 0) setActiveServer(firstOnline);
       }
     });
-    document.body.style.overflow = 'hidden';
-    document.body.style.overscrollBehavior = 'none';
+
+    // Scroll player into view
+    if (playerRef.current) {
+      playerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     function handleKey(e) {
       if (e.key === 'Escape') {
@@ -73,8 +78,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     document.addEventListener('keydown', handleKey);
 
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.overscrollBehavior = '';
+      document.body.classList.remove('player-active');
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
@@ -113,8 +117,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }
 
   return (
-    <div className="player-overlay">
-      <div className="player-container">
+    <div className="player-section" ref={playerRef}>
+      <div className="player-viewport">
         <div className="player-topbar">
           <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

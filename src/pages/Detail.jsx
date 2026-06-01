@@ -95,14 +95,28 @@ export default function Detail() {
 
   return (
     <div className="detail-page">
-      <div className="detail-backdrop-wrapper">
-        {backdropUrl && (
-          <img src={backdropUrl} alt="" className="detail-backdrop" />
-        )}
-        <div className="detail-backdrop-gradient" />
-      </div>
+      {showPlayer && (imdbId || id) ? (
+        <Player
+          imdbId={imdbId}
+          tmdbId={id}
+          mediaType={type}
+          season={isTV ? selectedSeason : undefined}
+          episode={isTV ? selectedEpisode : undefined}
+          title={title}
+          posterPath={data.poster_path}
+          backdropPath={data.backdrop_path}
+          onClose={() => setShowPlayer(false)}
+        />
+      ) : (
+        <div className="detail-backdrop-wrapper">
+          {backdropUrl && (
+            <img src={backdropUrl} alt="" className="detail-backdrop" />
+          )}
+          <div className="detail-backdrop-gradient" />
+        </div>
+      )}
 
-      <div className="detail-content">
+      <div className={`detail-content ${showPlayer ? 'player-active' : ''}`}>
         <div className="detail-top">
           <div className="detail-poster-side">
             {posterUrl && (
@@ -224,19 +238,7 @@ export default function Detail() {
         )}
       </div>
 
-      {showPlayer && (imdbId || id) && (
-        <Player
-          imdbId={imdbId}
-          tmdbId={id}
-          mediaType={type}
-          season={isTV ? selectedSeason : undefined}
-          episode={isTV ? selectedEpisode : undefined}
-          title={title}
-          posterPath={data.poster_path}
-          backdropPath={data.backdrop_path}
-          onClose={() => setShowPlayer(false)}
-        />
-      )}
+
 
       {showPlayer && !imdbId && !id && (
         <div className="trailer-modal-overlay" onClick={() => setShowPlayer(false)}>
