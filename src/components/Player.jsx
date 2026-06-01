@@ -11,8 +11,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const overlayRef = useRef(null);
   const serverPanelRef = useRef(null);
+  const controlsTimerRef = useRef(null);
 
   const handleClose = useCallback(() => {
     try {
@@ -33,6 +35,14 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     onClose();
   }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
 
+  const showControls = useCallback(() => {
+    setControlsVisible(true);
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = setTimeout(() => {
+      if (!showServerPanel) setControlsVisible(false);
+    }, 3000);
+  }, [showServerPanel]);
+
   useEffect(() => {
     checkAllServers().then((h) => {
       setHealth(h);
@@ -43,6 +53,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     });
     document.body.style.overflow = 'hidden';
     document.body.style.overscrollBehavior = 'none';
+
+    const initTimer = setTimeout(() => showControls(), 0);
 
     function handleKey(e) {
       if (e.key === 'Escape') {
@@ -63,6 +75,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         setLoadError(false);
         setShowServerPanel(false);
       }
+      showControls();
     }
 
     window.history.pushState({ playerOpen: true }, '');
@@ -79,8 +92,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       document.body.style.overscrollBehavior = '';
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      clearTimeout(initTimer);
     };
-  }, [handleClose, showServerPanel]);
+  }, [handleClose, showServerPanel, showControls]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -89,6 +104,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     }
     if (showServerPanel) {
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
@@ -112,9 +128,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }
 
   return (
-    <div ref={overlayRef} className="player-overlay">
+    <div
+      ref={overlayRef}
+      className="player-overlay"
+      onMouseMove={showControls}
+      onTouchStart={showControls}
+    >
       <div className="player-container">
-        <div className="player-topbar">
+        <div className="player-controls-tap-zone" onClick={() => { setControlsVisible(true); showControls(); }} />
+        <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
           <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
