@@ -18,8 +18,17 @@ const servers = [
     usesTmdbId: true,
   },
   {
+    id: 'filmku',
+    name: 'Server 3 — Filmku',
+    label: 'HD',
+    movie: (id) => `https://filmku.stream/embed/${id}`,
+    tv: (id) => `https://filmku.stream/embed/${id}`,
+    healthCheck: 'https://filmku.stream',
+    usesTmdbId: true,
+  },
+  {
     id: 'letsembed',
-    name: "Server 3 — Let's Embed",
+    name: "Server 4 — Let's Embed",
     label: 'HD',
     movie: (id) => `https://letsembed.cc/embed/movie/?id=${id}`,
     tv: (id, season, episode) => `https://letsembed.cc/embed/tv/?id=${id}/${season}/${episode}`,
@@ -28,7 +37,7 @@ const servers = [
   },
   {
     id: 'embed-api',
-    name: 'Server 4 — Embed API',
+    name: 'Server 5 — Embed API',
     label: 'HD',
     movie: (id) => `https://player.embed-api.stream/?id=${id}`,
     tv: (id, season, episode) => `https://player.embed-api.stream/?id=${id}&s=${season}&e=${episode}`,
@@ -37,7 +46,7 @@ const servers = [
   },
   {
     id: 'superembed',
-    name: 'Server 5 — SuperEmbed',
+    name: 'Server 6 — SuperEmbed',
     label: 'VIP',
     movie: (id) => `https://www.superembed.stream/embed/movie/${id}`,
     tv: (id, season, episode) => `https://www.superembed.stream/embed/tv/${id}/${season}/${episode}`,
@@ -46,7 +55,7 @@ const servers = [
   },
   {
     id: 'vidsrc-icu',
-    name: 'Server 6 — VidSrc',
+    name: 'Server 7 — VidSrc',
     label: 'SD',
     movie: (id) => `https://vidsrc.icu/embed/movie/${id}`,
     tv: (id, season, episode) => `https://vidsrc.icu/embed/tv/${id}/${season}/${episode}`,
@@ -54,7 +63,7 @@ const servers = [
   },
   {
     id: 'vidsrc-cc',
-    name: 'Server 7 — VidSrc.cc',
+    name: 'Server 8 — VidSrc.cc',
     label: 'SD',
     movie: (id) => `https://vidsrc.cc/v2/embed/movie/${id}`,
     tv: (id, season, episode) => `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`,
@@ -62,7 +71,7 @@ const servers = [
   },
   {
     id: 'autoembed',
-    name: 'Server 8 — AutoEmbed',
+    name: 'Server 9 — AutoEmbed',
     label: 'SD',
     movie: (id) => `https://player.autoembed.cc/embed/movie/${id}`,
     tv: (id, season, episode) => `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`,
@@ -70,7 +79,7 @@ const servers = [
   },
   {
     id: 'multiembed',
-    name: 'Server 9 — MultiEmbed',
+    name: 'Server 10 — MultiEmbed',
     label: 'SD',
     movie: (id) => `https://multiembed.mov/?video_id=${id}`,
     tv: (id, season, episode) => `https://multiembed.mov/?video_id=${id}&s=${season}&e=${episode}`,
@@ -78,7 +87,7 @@ const servers = [
   },
   {
     id: '2embed',
-    name: 'Server 10 — 2Embed',
+    name: 'Server 11 — 2Embed',
     label: 'SD',
     movie: (id) => `https://www.2embed.cc/embed/${id}`,
     tv: (id, season, episode) => `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
