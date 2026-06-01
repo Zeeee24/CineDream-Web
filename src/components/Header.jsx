@@ -1,10 +1,20 @@
 import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDevice } from '../hooks/useDevice';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { isTV } = useDevice();
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 50);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const links = [
     { to: '/', label: 'Home' },
@@ -17,7 +27,7 @@ export default function Header() {
   }
 
   return (
-    <header className="header" onKeyDown={handleKeyDown}>
+    <header className={`header ${scrolled ? 'scrolled' : ''}`} onKeyDown={handleKeyDown}>
       <div className="header-inner">
         <NavLink to="/" className="header-logo">
           <span className="logo-icon">C</span>
