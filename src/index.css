@@ -1098,8 +1098,7 @@ img {
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  overscroll-behavior: contain;
-  touch-action: manipulation;
+  overflow: hidden;
 }
 
 .player-container {
@@ -1108,6 +1107,7 @@ img {
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* === Topbar === */
@@ -1188,6 +1188,8 @@ img {
   overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .player-server-panel-header {
@@ -1222,8 +1224,11 @@ img {
 
 .player-server-list {
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 4px 8px 16px;
   -webkit-overflow-scrolling: touch;
+  max-height: calc(55vh - 40px);
+  overscroll-behavior: contain;
 }
 
 .player-server-item {
@@ -1330,9 +1335,10 @@ img {
 }
 
 .player-iframe {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  flex: 1;
   border: none;
   background: #000;
 }
@@ -2130,7 +2136,6 @@ img {
   }
 
   .scroll-row-content {
-    touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
   }
