@@ -1,17 +1,50 @@
 const servers = [
   {
+    id: 'letsembed',
+    name: "Let's Embed",
+    movie: (id) => `https://letsembed.cc/embed/movie/?id=${id}`,
+    tv: (id, season, episode) => `https://letsembed.cc/embed/tv/?id=${id}/${season}/${episode}`,
+    healthCheck: 'https://letsembed.cc',
+    usesTmdbId: true,
+  },
+  {
+    id: 'cinezo',
+    name: 'Cinezo',
+    movie: (id) => `https://player.cinezo.live/embed/movie/${id}`,
+    tv: (id, season, episode) => `https://player.cinezo.live/embed/tv/${id}/${season}/${episode}`,
+    healthCheck: 'https://player.cinezo.live',
+    usesTmdbId: true,
+  },
+  {
+    id: 'ezvidapi',
+    name: 'EzVidAPI',
+    movie: (id) => `https://ezvidapi.com/embed/movie/${id}`,
+    tv: (id, season, episode) => `https://ezvidapi.com/embed/tv/${id}/${season}/${episode}`,
+    healthCheck: 'https://ezvidapi.com',
+    usesTmdbId: true,
+  },
+  {
+    id: 'embed-api',
+    name: 'Embed API',
+    movie: (id) => `https://player.embed-api.stream/?id=${id}`,
+    tv: (id, season, episode) => `https://player.embed-api.stream/?id=${id}&s=${season}&e=${episode}`,
+    healthCheck: 'https://player.embed-api.stream',
+    usesTmdbId: true,
+  },
+  {
+    id: 'superembed',
+    name: 'SuperEmbed',
+    movie: (id) => `https://www.superembed.stream/embed/movie/${id}`,
+    tv: (id, season, episode) => `https://www.superembed.stream/embed/tv/${id}/${season}/${episode}`,
+    healthCheck: 'https://www.superembed.stream',
+    usesTmdbId: true,
+  },
+  {
     id: 'vidsrc-icu',
     name: 'VidSrc.icu',
     movie: (id) => `https://vidsrc.icu/embed/movie/${id}`,
     tv: (id, season, episode) => `https://vidsrc.icu/embed/tv/${id}/${season}/${episode}`,
     healthCheck: 'https://vidsrc.icu',
-  },
-  {
-    id: 'vidsrc-me',
-    name: 'VidSrc.me',
-    movie: (id) => `https://vidsrc.me/embed/movie?imdb=${id}`,
-    tv: (id, season, episode) => `https://vidsrc.me/embed/tv?imdb=${id}&season=${season}&episode=${episode}`,
-    healthCheck: 'https://vidsrc.me',
   },
   {
     id: 'vidsrc-cc',
@@ -21,20 +54,6 @@ const servers = [
     healthCheck: 'https://vidsrc.cc',
   },
   {
-    id: 'multiembed',
-    name: 'MultiEmbed',
-    movie: (id) => `https://multiembed.mov/?video_id=${id}`,
-    tv: (id, season, episode) => `https://multiembed.mov/?video_id=${id}&s=${season}&e=${episode}`,
-    healthCheck: 'https://multiembed.mov',
-  },
-  {
-    id: '2embed',
-    name: '2Embed',
-    movie: (id) => `https://www.2embed.cc/embed/${id}`,
-    tv: (id, season, episode) => `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
-    healthCheck: 'https://www.2embed.cc',
-  },
-  {
     id: 'autoembed',
     name: 'AutoEmbed',
     movie: (id) => `https://player.autoembed.cc/embed/movie/${id}`,
@@ -42,25 +61,11 @@ const servers = [
     healthCheck: 'https://player.autoembed.cc',
   },
   {
-    id: 'filme',
-    name: 'FilmU',
-    movie: (id) => `https://embed.filme.in/movie/${id}`,
-    tv: (id, season, episode) => `https://embed.filme.in/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://embed.filme.in',
-  },
-  {
-    id: 'vidbinge',
-    name: 'VidBinge',
-    movie: (id) => `https://vidbinge.to/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://vidbinge.to/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://vidbinge.to',
-  },
-  {
-    id: 'vidsrc-mov',
-    name: 'VidSrc.mov',
-    movie: (id) => `https://vidsrc.mov/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://vidsrc.mov/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://vidsrc.mov',
+    id: 'multiembed',
+    name: 'MultiEmbed',
+    movie: (id) => `https://multiembed.mov/?video_id=${id}`,
+    tv: (id, season, episode) => `https://multiembed.mov/?video_id=${id}&s=${season}&e=${episode}`,
+    healthCheck: 'https://multiembed.mov',
   },
 ];
 
@@ -97,11 +102,12 @@ export async function checkAllServers() {
   return results;
 }
 
-export function getEmbedUrl(server, imdbId, mediaType, season, episode) {
+export function getEmbedUrl(server, imdbId, mediaType, season, episode, tmdbId) {
+  const id = server.usesTmdbId ? tmdbId : imdbId;
   if (mediaType === 'tv') {
-    return server.tv(imdbId, season || 1, episode || 1);
+    return server.tv(id, season || 1, episode || 1);
   }
-  return server.movie(imdbId);
+  return server.movie(id);
 }
 
 export function getServers() {

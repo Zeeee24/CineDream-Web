@@ -214,9 +214,10 @@ export default function Detail() {
         )}
       </div>
 
-      {showPlayer && imdbId && (
+      {showPlayer && (imdbId || id) && (
         <Player
           imdbId={imdbId}
+          tmdbId={id}
           mediaType={type}
           season={isTV ? selectedSeason : undefined}
           episode={isTV ? selectedEpisode : undefined}
@@ -224,7 +225,7 @@ export default function Detail() {
         />
       )}
 
-      {showPlayer && !imdbId && (
+      {showPlayer && !imdbId && !id && (
         <div className="trailer-modal-overlay" onClick={() => setShowPlayer(false)}>
           <div className="trailer-modal" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="#ff4444">

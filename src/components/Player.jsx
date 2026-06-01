@@ -3,7 +3,7 @@ import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 
 const allServers = getServers();
 
-export default function Player({ imdbId, mediaType, season, episode, onClose }) {
+export default function Player({ imdbId, tmdbId, mediaType, season, episode, onClose }) {
   const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
   const [showServerPanel, setShowServerPanel] = useState(false);
@@ -27,10 +27,10 @@ export default function Player({ imdbId, mediaType, season, episode, onClose }) 
     if (e.target === overlayRef.current) onClose();
   }
 
-  if (!imdbId) return null;
+  if (!imdbId && !tmdbId) return null;
 
   const current = allServers[activeServer];
-  const embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode);
+  const embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode, tmdbId);
 
   return (
     <div
