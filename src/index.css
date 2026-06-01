@@ -754,6 +754,34 @@ img {
   position: relative;
 }
 
+.detail-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  top: calc(16px + env(safe-area-inset-top));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.detail-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.detail-back-btn:active {
+  transform: scale(0.9);
+}
+
 .detail-backdrop-wrapper {
   position: relative;
   width: 100%;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
 import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
 import { getYouTubeThumbnail } from '../services/youtube';
@@ -14,6 +14,7 @@ export default function Detail() {
   const { type, id } = useParams();
   const [searchParams] = useSearchParams();
   const { isTV } = useDevice();
+  const navigate = useNavigate();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,8 +109,13 @@ export default function Detail() {
           onClose={() => setShowPlayer(false)}
         />
       ) : (
-        <div className="detail-backdrop-wrapper">
-          {backdropUrl && (
+      <div className="detail-backdrop-wrapper">
+        <button className="detail-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+        {backdropUrl && (
             <img src={backdropUrl} alt="" className="detail-backdrop" />
           )}
           <div className="detail-backdrop-gradient" />
