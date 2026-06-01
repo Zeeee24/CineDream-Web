@@ -14,17 +14,21 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const overlayRef = useRef(null);
 
   const handleClose = useCallback(() => {
-    addToHistory({
-      tmdbId: Number(tmdbId),
-      title: title || 'Untitled',
-      posterPath: posterPath || null,
-      backdropPath: backdropPath || null,
-      contentType: mediaType === 'tv' ? 'TV' : 'Movie',
-      season: season || null,
-      episode: episode || null,
-      progressSeconds: 1,
-      durationSeconds: 3600,
-    });
+    try {
+      addToHistory({
+        tmdbId: Number(tmdbId),
+        title: title || 'Untitled',
+        posterPath: posterPath || null,
+        backdropPath: backdropPath || null,
+        contentType: mediaType === 'tv' ? 'TV' : 'Movie',
+        season: season || null,
+        episode: episode || null,
+        progressSeconds: 1,
+        durationSeconds: 3600,
+      });
+    } catch (e) {
+      console.warn('Failed to save history:', e);
+    }
     onClose();
   }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
 
@@ -133,8 +137,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           src={embedUrl}
           title={title || 'Player'}
           allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; media"
           referrerPolicy="origin"
           className="player-iframe"
           onLoad={() => { setLoading(false); setLoadError(false); }}
