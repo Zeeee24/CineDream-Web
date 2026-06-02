@@ -2043,11 +2043,14 @@ body.player-active .back-to-top {
 @media (max-width: 767px) {
   body.player-active .player-section {
     position: fixed;
-    inset: 0;
+    left: 0;
+    right: 0;
+    top: 0;
     z-index: 2000;
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .player-viewport {
