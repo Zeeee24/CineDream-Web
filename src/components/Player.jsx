@@ -276,6 +276,14 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
   }, [season]);
 
+  useEffect(() => {
+    if (isTV && season && episode) {
+      setLoading(true);
+      setLoadError(false);
+      setIframeKey((k) => k + 1);
+    }
+  }, [season, episode, isTV]);
+
   function handleMuteToggle() {
     hapticLight();
     setIsMuted((m) => !m);
