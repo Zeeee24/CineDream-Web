@@ -124,7 +124,9 @@ export default function Detail() {
   )?.key || videos.find((v) => v.site === 'YouTube')?.key || null;
 
   const infoLine = formatDetailInfo(year, rating, runtime, cert);
-  const seasons = data.seasons || [];
+  const seasons = data.seasons || (data.number_of_seasons 
+    ? Array.from({ length: data.number_of_seasons }, (_, i) => ({ season_number: i + 1, id: `s${i + 1}` })) 
+    : []);
 
   function handlePlayNow() {
     setShowPlayer(true);
