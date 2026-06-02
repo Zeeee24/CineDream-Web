@@ -1899,7 +1899,7 @@ body.player-active {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 30;
+  z-index: 35;
   max-height: 60%;
   background: #111;
   border-radius: 16px 16px 0 0;
@@ -1910,6 +1910,7 @@ body.player-active {
   display: flex;
   flex-direction: column;
   min-height: 200px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .player-episode-panel-header {

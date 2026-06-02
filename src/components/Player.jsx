@@ -453,7 +453,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         />
 
         {showEpisodePanel && isTV && (
-          <div className="player-episode-panel">
+          <div className="player-episode-panel" style={{ display: 'flex' }}>
             <div className="player-episode-panel-header">
               <span>Episodes</span>
               <select
