@@ -55,6 +55,12 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     }
   }
 
+  function handleTouchZoneTap(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    showControls();
+  }
+
   useEffect(() => {
     showControls();
     return () => clearTimeout(hideTimerRef.current);
@@ -183,6 +189,12 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             <span className="server-toggle-label">Servers</span>
           </button>
         </div>
+
+        <div
+          className="player-touch-zone"
+          onTouchStart={handleTouchZoneTap}
+          onClick={handleTouchZoneTap}
+        />
 
         {showServerPanel && (
           <div className="player-server-panel">
