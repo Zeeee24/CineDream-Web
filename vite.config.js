@@ -13,7 +13,7 @@ function stripCrossorigin() {
 
 export default defineConfig({
   plugins: [react(), stripCrossorigin()],
-  base: '/',
+  base: '/CineDream-Web/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

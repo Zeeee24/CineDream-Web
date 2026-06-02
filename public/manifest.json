@@ -2,8 +2,8 @@
   "name": "CineDream",
   "short_name": "CineDream",
   "description": "Watch movies and TV shows, discover what to watch next.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/CineDream-Web/",
+  "scope": "/CineDream-Web/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#000000",
@@ -11,15 +11,15 @@
   "categories": ["entertainment", "movies"],
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/CineDream-Web/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/CineDream-Web/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/favicon.svg",
+      "src": "/CineDream-Web/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/CineDream-Web/svg+xml",
       "purpose": "maskable"
     }
   ]
