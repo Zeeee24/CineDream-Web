@@ -1,10 +1,12 @@
 import { useHorizontalScroll } from '../hooks/useHorizontalScroll';
+import { useCardHover } from '../hooks/useCardHover';
 import { useDevice } from '../hooks/useDevice';
 import MediaCard from './MediaCard';
 import { SkeletonRow } from './Skeleton';
 
 export default function ScrollRow({ title, items = [], loading, showRank = false }) {
   const { ref, showLeft, showRight, scrollLeft, scrollRight } = useHorizontalScroll();
+  const { hoveredIndex, onEnter, onLeave } = useCardHover(450);
   const { isTV } = useDevice();
 
   return (
@@ -32,6 +34,12 @@ export default function ScrollRow({ title, items = [], loading, showRank = false
                 item={item}
                 index={showRank ? i : undefined}
                 showRank={showRank}
+                inRow
+                isHovered={hoveredIndex === i}
+                isNeighbor={hoveredIndex !== null && Math.abs(hoveredIndex - i) === 1}
+                neighborDirection={hoveredIndex !== null && i < hoveredIndex ? 'left' : 'right'}
+                onHoverEnter={onEnter}
+                onHoverLeave={onLeave}
               />
             ))}
           </div>

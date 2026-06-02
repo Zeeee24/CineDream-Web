@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
 import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
@@ -9,6 +9,9 @@ import TrailerModal from '../components/TrailerModal';
 import Player from '../components/Player';
 import { SkeletonHero } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
+import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
+import { getRating, toggleRating } from '../services/ratings';
+import { hapticLight } from '../utils/haptics';
 import EpisodeGrid from '../components/EpisodeGrid';
 
 export default function Detail() {
@@ -23,8 +26,47 @@ export default function Detail() {
   const [showPlayer, setShowPlayer] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
+  const [, setListVersion] = useState(0);
+  const [, setRatingVersion] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+  const [swipeDelta, setSwipeDelta] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
 
   const isMovie = type === 'movie';
+
+  useEffect(() => {
+    function onScroll() {
+      setScrollY(window.scrollY);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  function handleTouchStart(e) {
+    if (scrollY > 0) return;
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    setIsSwiping(true);
+  }
+
+  function handleTouchMove(e) {
+    if (!isSwiping || scrollY > 0) return;
+    const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
+    if (deltaX > Math.abs(deltaY)) return;
+    if (deltaY > 0) {
+      setSwipeDelta(deltaY);
+    }
+  }
+
+  function handleTouchEnd() {
+    if (swipeDelta > 120) {
+      navigate(-1);
+    } else {
+      setSwipeDelta(0);
+    }
+    setIsSwiping(false);
+  }
 
   useEffect(() => {
     async function load() {
@@ -95,8 +137,36 @@ export default function Detail() {
     }
   }
 
+  function handleToggleList() {
+    hapticLight();
+    toggleWatchlist({
+      tmdbId: Number(id),
+      title,
+      posterPath: data.poster_path || null,
+      backdropPath: data.backdrop_path || null,
+      mediaType: type,
+    });
+    setListVersion((v) => v + 1);
+  }
+
+  function handleRate(rating) {
+    hapticLight();
+    toggleRating(Number(id), rating);
+    setRatingVersion((v) => v + 1);
+  }
+
   return (
-    <div className="detail-page">
+    <div
+      className={`detail-page ${isSwiping && swipeDelta > 0 ? 'swiping' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        transform: swipeDelta > 0 ? `translateY(${swipeDelta * 0.5}px)` : undefined,
+        opacity: swipeDelta > 0 ? Math.max(1 - swipeDelta / 400, 0.3) : undefined,
+        transition: isSwiping ? 'none' : 'transform 0.3s ease, opacity 0.3s ease',
+      }}
+    >
       {showPlayer && (imdbId || id) ? (
         <Player
           imdbId={imdbId}
@@ -119,7 +189,15 @@ export default function Detail() {
           </svg>
         </button>
         {backdropUrl && (
-            <img src={backdropUrl} alt="" className="detail-backdrop" />
+            <img
+              src={backdropUrl}
+              alt=""
+              className="detail-backdrop"
+              style={{
+                transform: `translateY(${scrollY * 0.3}px) scale(${1 + scrollY * 0.0003})`,
+                opacity: Math.max(1 - scrollY / 500, 0.3),
+              }}
+            />
           )}
           <div className="detail-backdrop-gradient" />
         </div>
@@ -182,6 +260,39 @@ export default function Detail() {
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                 </svg>
                 Share
+              </button>
+              <button
+                className={`btn btn-secondary btn-large ${isInWatchlist(Number(id)) ? 'btn-list-active' : ''}`}
+                onClick={handleToggleList}
+              >
+                {isInWatchlist(Number(id)) ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                )}
+                {isInWatchlist(Number(id)) ? 'In My List' : 'My List'}
+              </button>
+              <button
+                className={`btn btn-icon-detail ${getRating(Number(id)) === 'up' ? 'btn-icon-active-up' : ''}`}
+                onClick={() => handleRate('up')}
+                aria-label="Thumbs up"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={getRating(Number(id)) === 'up' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                </svg>
+              </button>
+              <button
+                className={`btn btn-icon-detail ${getRating(Number(id)) === 'down' ? 'btn-icon-active-down' : ''}`}
+                onClick={() => handleRate('down')}
+                aria-label="Thumbs down"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={getRating(Number(id)) === 'down' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+                </svg>
               </button>
             </div>
           </div>

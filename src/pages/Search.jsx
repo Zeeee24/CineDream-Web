@@ -267,7 +267,7 @@ export default function Search() {
           <>
             <div className="search-result-count">{filtered.length} result{filtered.length !== 1 ? 's' : ''} found</div>
             <div className="content-grid content-swap-enter">
-              {filtered.map((item, i) => (
+              {filtered.map((item) => (
                 <MediaCard key={item.id} item={item} />
               ))}
             </div>

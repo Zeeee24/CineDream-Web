@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
+import { hapticLight, hapticMedium } from '../utils/haptics';
 
 const allServers = getServers();
 
@@ -17,8 +18,13 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [showSkipIntro, setShowSkipIntro] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const playerRef = useRef(null);
+  const viewportRef = useRef(null);
   const hideTimerRef = useRef(null);
+  const skipTimerRef = useRef(null);
 
   const isTV = mediaType === 'tv';
   const validSeasons = (seasons || []).filter((s) => s.season_number > 0);
@@ -185,6 +191,18 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         setLoadError(false);
         setShowServerPanel(false);
       }
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        showControls();
+      }
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        handleFullscreen();
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        handleMuteToggle();
+      }
     }
 
     window.history.pushState({ playerOpen: true }, '');
@@ -253,6 +271,43 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
   }, [season]);
 
+  useEffect(() => {
+    if (!loading) {
+      skipTimerRef.current = setTimeout(() => {
+        if (isTV) setShowSkipIntro(true);
+      }, 30000);
+    }
+    return () => clearTimeout(skipTimerRef.current);
+  }, [loading, iframeKey]);
+
+  useEffect(() => {
+    if (showSkipIntro) {
+      const hideTimer = setTimeout(() => setShowSkipIntro(false), 10000);
+      return () => clearTimeout(hideTimer);
+    }
+  }, [showSkipIntro]);
+
+  function handleMuteToggle() {
+    hapticLight();
+    setIsMuted((m) => !m);
+  }
+
+  function handleFullscreen() {
+    hapticLight();
+    if (viewportRef.current) {
+      if (!document.fullscreenElement) {
+        viewportRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+      } else {
+        document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+      }
+    }
+  }
+
+  function handleSkipIntro() {
+    hapticMedium();
+    setShowSkipIntro(false);
+  }
+
   if (!imdbId && !tmdbId) return null;
 
   const current = allServers[activeServer];
@@ -275,6 +330,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     >
       <div
         className="player-viewport"
+        ref={viewportRef}
         onTouchStart={handlePlayerTouchStart}
       >
         <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
@@ -337,6 +393,39 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               <line x1="6" y1="18" x2="6.01" y2="18" />
             </svg>
             <span className="server-toggle-label">Servers</span>
+          </button>
+          <button
+            className="player-topbar-btn"
+            onClick={handleMuteToggle}
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
+          >
+            {isMuted ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            )}
+          </button>
+          <button
+            className="player-topbar-btn"
+            onClick={handleFullscreen}
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+            )}
           </button>
         </div>
 
@@ -458,6 +547,23 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           onLoad={() => { setLoading(false); setLoadError(false); }}
           onError={() => { setLoading(false); setLoadError(true); }}
         />
+
+        {isMuted && (
+          <div className="player-mute-overlay" onClick={handleMuteToggle}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+            <span style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>Tap to unmute</span>
+          </div>
+        )}
+
+        {showSkipIntro && (
+          <button className="player-skip-btn" onClick={handleSkipIntro}>
+            Skip Intro
+          </button>
+        )}
 
         {loadError && (
           <div className="player-error">

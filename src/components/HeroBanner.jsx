@@ -3,10 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { img } from '../services/tmdb';
 import { formatRuntime, getYear, truncate } from '../utils/helpers';
 import { useDevice } from '../hooks/useDevice';
+import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
+import { getRating, toggleRating } from '../services/ratings';
+import { hapticLight } from '../utils/haptics';
 
 export default function HeroBanner({ items = [], interval = 8000 }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
+  const [, setListVersion] = useState(0);
+  const [, setRatingVersion] = useState(0);
+  const [nowTimestamp] = useState(() => Date.now());
   const navigate = useNavigate();
   const { isTV } = useDevice();
 
@@ -34,9 +40,9 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
   const runtime = item.runtime || null;
   const isRecent = item.release_date
-    ? new Date(item.release_date) > new Date(Date.now() - 90 * 86400000)
+    ? new Date(item.release_date) > new Date(nowTimestamp - 90 * 86400000)
     : item.first_air_date
-    ? new Date(item.first_air_date) > new Date(Date.now() - 90 * 86400000)
+    ? new Date(item.first_air_date) > new Date(nowTimestamp - 90 * 86400000)
     : false;
   const isTrending = item.vote_count > 1000 && item.vote_average >= 7.5;
 
@@ -53,6 +59,27 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
       e.preventDefault();
       handlePlay();
     }
+  }
+
+  const inList = isInWatchlist(item.id);
+  const myRating = getRating(item.id);
+
+  function handleToggleList() {
+    hapticLight();
+    toggleWatchlist({
+      tmdbId: item.id,
+      title,
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      mediaType,
+    });
+    setListVersion((v) => v + 1);
+  }
+
+  function handleRate(rating) {
+    hapticLight();
+    toggleRating(item.id, rating);
+    setRatingVersion((v) => v + 1);
   }
 
   return (
@@ -104,6 +131,39 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
             </svg>
             More Info
+          </button>
+          <button
+            className={`btn btn-icon ${inList ? 'btn-icon-active' : ''}`}
+            onClick={handleToggleList}
+            aria-label={inList ? 'Remove from My List' : 'Add to My List'}
+          >
+            {inList ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            )}
+          </button>
+          <button
+            className={`btn btn-icon ${myRating === 'up' ? 'btn-icon-active-up' : ''}`}
+            onClick={() => handleRate('up')}
+            aria-label="Thumbs up"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={myRating === 'up' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+            </svg>
+          </button>
+          <button
+            className={`btn btn-icon ${myRating === 'down' ? 'btn-icon-active-down' : ''}`}
+            onClick={() => handleRate('down')}
+            aria-label="Thumbs down"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={myRating === 'down' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+            </svg>
           </button>
         </div>
       </div>

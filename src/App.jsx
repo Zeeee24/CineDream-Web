@@ -8,6 +8,7 @@ import Search from './pages/Search';
 import Browse from './pages/Browse';
 import Detail from './pages/Detail';
 import ActorPage from './pages/ActorPage';
+import MyList from './pages/MyList';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/browse" element={<Browse />} />
+        <Route path="/mylist" element={<MyList />} />
         <Route path="/:type/:id" element={<Detail />} />
         <Route path="/person/:id" element={<ActorPage />} />
         <Route path="*" element={<NotFound />} />

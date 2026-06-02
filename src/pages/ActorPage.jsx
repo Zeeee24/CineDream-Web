@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPersonDetails, getPersonCredits, img } from '../services/tmdb';
-import { useDevice } from '../hooks/useDevice';
 import { SkeletonHero } from '../components/Skeleton';
 
 export default function ActorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isTV, isTablet, isDesktop } = useDevice();
   const [person, setPerson] = useState(null);
   const [credits, setCredits] = useState([]);
   const [loading, setLoading] = useState(true);

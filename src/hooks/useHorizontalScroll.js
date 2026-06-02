@@ -26,7 +26,7 @@ export function useHorizontalScroll() {
   const scroll = (dir) => {
     const el = ref.current;
     if (!el) return;
-    const amount = el.clientWidth * 0.75;
+    const amount = el.clientWidth * 0.85;
     el.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
   };
 

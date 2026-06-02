@@ -10,8 +10,11 @@ import {
   getTop10TV,
   getRecentlyAdded,
   getBollywood,
+  getMovieDetails,
+  getTVDetails,
 } from '../services/tmdb';
 import { getContinueWatching, getRecentlyViewed } from '../services/watchHistory';
+import { getWatchlist } from '../services/watchlist';
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -28,6 +31,45 @@ export default function Home() {
 
   const continueWatching = useMemo(() => getContinueWatching(), [historyTick]);
   const recentlyViewed = useMemo(() => getRecentlyViewed(), [historyTick]);
+  const [myListItems, setMyListItems] = useState([]);
+
+  useEffect(() => {
+    async function loadMyList() {
+      const list = getWatchlist();
+      const enriched = await Promise.all(
+        list.slice(0, 20).map(async (item) => {
+          try {
+            const details = item.mediaType === 'tv'
+              ? await getTVDetails(item.tmdbId)
+              : await getMovieDetails(item.tmdbId);
+            return {
+              id: item.tmdbId,
+              media_type: item.mediaType,
+              title: details.title || details.name || item.title,
+              poster_path: details.poster_path || item.posterPath,
+              backdrop_path: details.backdrop_path || item.backdropPath,
+              vote_average: details.vote_average || 0,
+              release_date: details.release_date,
+              first_air_date: details.first_air_date,
+              overview: details.overview || '',
+            };
+          } catch {
+            return {
+              id: item.tmdbId,
+              media_type: item.mediaType,
+              title: item.title,
+              poster_path: item.posterPath,
+              backdrop_path: item.backdropPath,
+              vote_average: 0,
+              overview: '',
+            };
+          }
+        })
+      );
+      setMyListItems(enriched);
+    }
+    loadMyList();
+  }, [historyTick]);
 
   useEffect(() => {
     function handleStorage() {
@@ -72,6 +114,10 @@ export default function Home() {
     <div className="home-page">
       <HeroBanner items={data.hero} />
       <div className="home-rows">
+        {myListItems.length > 0 && (
+          <ScrollRow title="My List" items={myListItems} />
+        )}
+
         {continueWatching.length > 0 && (
           <div className="scroll-row">
             <div className="scroll-row-header">

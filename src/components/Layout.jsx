@@ -1,5 +1,6 @@
 import Header from './Header';
 import Footer from './Footer';
+import BottomNav from './BottomNav';
 
 export default function Layout({ children }) {
   return (
@@ -8,6 +9,7 @@ export default function Layout({ children }) {
       <Header />
       <main id="main-content" className="main" tabIndex={-1}>{children}</main>
       <Footer />
+      <BottomNav />
     </div>
   );
 }
