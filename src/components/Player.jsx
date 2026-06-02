@@ -365,6 +365,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                 setShowServerPanel(false); 
               }}
               aria-label="Episodes"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="3" width="20" height="18" rx="2" />
@@ -453,7 +454,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         />
 
         {showEpisodePanel && isTV && (
-          <div className="player-episode-panel" style={{ display: 'flex' }}>
+          <div className="player-episode-panel" style={{ display: 'flex', position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 35 }}>
             <div className="player-episode-panel-header">
               <span>Episodes</span>
               <select
