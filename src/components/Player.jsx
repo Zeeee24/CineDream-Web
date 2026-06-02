@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
+import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
 
 const allServers = getServers();
 
-export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, onClose }) {
+export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose }) {
   const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
   const [showServerPanel, setShowServerPanel] = useState(false);
+  const [showEpisodePanel, setShowEpisodePanel] = useState(false);
+  const [episodes, setEpisodes] = useState([]);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [episodesSeason, setEpisodesSeason] = useState(season || 1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
   const playerRef = useRef(null);
   const hideTimerRef = useRef(null);
+
+  const isTV = mediaType === 'tv';
+  const validSeasons = (seasons || []).filter((s) => s.season_number > 0);
 
   const handleClose = useCallback(() => {
     try {
@@ -22,7 +30,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         title: title || 'Untitled',
         posterPath: posterPath || null,
         backdropPath: backdropPath || null,
-        contentType: mediaType === 'tv' ? 'TV' : 'Movie',
+        contentType: isTV ? 'TV' : 'Movie',
         season: season || null,
         episode: episode || null,
         progressSeconds: 1,
@@ -32,13 +40,87 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       console.warn('Failed to save history:', e);
     }
     onClose();
-  }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
+  }, [tmdbId, title, posterPath, backdropPath, isTV, season, episode, onClose]);
+
+  function goToEpisode(newSeason, newEpisode) {
+    if (onEpisodeChange) onEpisodeChange(newSeason, newEpisode);
+    setShowEpisodePanel(false);
+    setLoading(true);
+    setLoadError(false);
+    setIframeKey((k) => k + 1);
+    showControls();
+  }
+
+  function handlePrevEpisode() {
+    if (!isTV || !season || !episode) return;
+    if (episodes.length > 0) {
+      const idx = episodes.findIndex((e) => e.episode_number === episode);
+      if (idx > 0) {
+        goToEpisode(season, episodes[idx - 1].episode_number);
+      } else if (season > 1) {
+        const prevSeasonNum = season - 1;
+        setEpisodesSeason(prevSeasonNum);
+        getTVSeason(tmdbId, prevSeasonNum).then((data) => {
+          const prevEps = data.episodes || [];
+          if (prevEps.length > 0) {
+            goToEpisode(prevSeasonNum, prevEps[prevEps.length - 1].episode_number);
+          }
+        }).catch(() => {});
+      }
+    } else if (season > 1) {
+      const prevSeasonNum = season - 1;
+      setEpisodesSeason(prevSeasonNum);
+      getTVSeason(tmdbId, prevSeasonNum).then((data) => {
+        const prevEps = data.episodes || [];
+        if (prevEps.length > 0) {
+          goToEpisode(prevSeasonNum, prevEps[prevEps.length - 1].episode_number);
+        }
+      }).catch(() => {});
+    }
+  }
+
+  function handleNextEpisode() {
+    if (!isTV || !season || !episode) return;
+    if (episodes.length > 0) {
+      const idx = episodes.findIndex((e) => e.episode_number === episode);
+      if (idx >= 0 && idx < episodes.length - 1) {
+        goToEpisode(season, episodes[idx + 1].episode_number);
+      } else if (validSeasons.length > 0) {
+        const lastSeason = validSeasons[validSeasons.length - 1];
+        if (season < lastSeason.season_number) {
+          const nextSeasonNum = season + 1;
+          setEpisodesSeason(nextSeasonNum);
+          getTVSeason(tmdbId, nextSeasonNum).then((data) => {
+            const nextEps = data.episodes || [];
+            if (nextEps.length > 0) {
+              goToEpisode(nextSeasonNum, nextEps[0].episode_number);
+            }
+          }).catch(() => {});
+        }
+      }
+    } else if (validSeasons.length > 0) {
+      const lastSeason = validSeasons[validSeasons.length - 1];
+      if (season < lastSeason.season_number) {
+        const nextSeasonNum = season + 1;
+        setEpisodesSeason(nextSeasonNum);
+        getTVSeason(tmdbId, nextSeasonNum).then((data) => {
+          const nextEps = data.episodes || [];
+          if (nextEps.length > 0) {
+            goToEpisode(nextSeasonNum, nextEps[0].episode_number);
+          }
+        }).catch(() => {});
+      }
+    }
+  }
+
+  const canGoPrev = isTV && season > 1;
+  const canGoNext = isTV && validSeasons.length > 0 && season < validSeasons[validSeasons.length - 1].season_number;
 
   function showControls() {
     setControlsVisible(true);
     clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      if (!showServerPanel) setControlsVisible(false);
+      if (!showServerPanel && !showEpisodePanel) setControlsVisible(false);
     }, 4000);
   }
 
@@ -82,7 +164,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     function handleKey(e) {
       if (e.key === 'Escape') {
-        if (showServerPanel) setShowServerPanel(false);
+        if (showEpisodePanel) setShowEpisodePanel(false);
+        else if (showServerPanel) setShowServerPanel(false);
         else handleClose();
         return;
       }
@@ -106,7 +189,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     window.history.pushState({ playerOpen: true }, '');
     function handlePopState() {
-      if (showServerPanel) setShowServerPanel(false);
+      if (showEpisodePanel) setShowEpisodePanel(false);
+      else if (showServerPanel) setShowServerPanel(false);
       else handleClose();
     }
 
@@ -118,7 +202,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [handleClose, showServerPanel]);
+  }, [handleClose, showServerPanel, showEpisodePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -128,9 +212,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           setShowServerPanel(false);
         }
       }
+      if (showEpisodePanel) {
+        const panel = document.querySelector('.player-episode-panel');
+        if (panel && !panel.contains(e.target)) {
+          setShowEpisodePanel(false);
+        }
+      }
     }
-    if (showServerPanel) {
-      setControlsVisible(true);
+    if (showServerPanel || showEpisodePanel) {
+      setControlsVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
       clearTimeout(hideTimerRef.current);
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
@@ -139,7 +229,29 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [showServerPanel]);
+  }, [showServerPanel, showEpisodePanel]);
+
+  useEffect(() => {
+    if (!showEpisodePanel || !isTV || !tmdbId) return;
+    let cancelled = false;
+    async function loadEpisodes() {
+      setEpisodesLoading(true);
+      try {
+        const data = await getTVSeason(tmdbId, episodesSeason);
+        if (!cancelled) setEpisodes(data.episodes || []);
+      } catch {
+        if (!cancelled) setEpisodes([]);
+      } finally {
+        if (!cancelled) setEpisodesLoading(false);
+      }
+    }
+    loadEpisodes();
+    return () => { cancelled = true; };
+  }, [showEpisodePanel, tmdbId, episodesSeason]);
+
+  useEffect(() => {
+    if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [season]);
 
   if (!imdbId && !tmdbId) return null;
 
@@ -173,11 +285,49 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           </button>
           <div className="player-topbar-title">
             {title || 'Now Playing'}
-            {mediaType === 'tv' && <span className="player-topbar-episode"> S{season}E{episode}</span>}
+            {isTV && <span className="player-topbar-episode"> S{season}E{episode}</span>}
           </div>
+          {isTV && (
+            <button
+              className="player-topbar-btn"
+              onClick={handlePrevEpisode}
+              disabled={!canGoPrev}
+              aria-label="Previous episode"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20" /><line x1="5" y1="19" x2="5" y2="5" />
+              </svg>
+            </button>
+          )}
+          {isTV && (
+            <button
+              className="player-topbar-btn"
+              onClick={handleNextEpisode}
+              disabled={!canGoNext}
+              aria-label="Next episode"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
+              </svg>
+            </button>
+          )}
+          {isTV && (
+            <button
+              className={`player-topbar-btn ${showEpisodePanel ? 'active' : ''}`}
+              onClick={() => { setShowEpisodePanel(!showEpisodePanel); setShowServerPanel(false); }}
+              aria-label="Episodes"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="18" rx="2" />
+                <line x1="2" y1="9" x2="22" y2="9" />
+                <line x1="2" y1="15" x2="22" y2="15" />
+              </svg>
+              <span className="server-toggle-label">Episodes</span>
+            </button>
+          )}
           <button
             className={`player-topbar-btn server-toggle ${showServerPanel ? 'active' : ''}`}
-            onClick={() => setShowServerPanel(!showServerPanel)}
+            onClick={() => { setShowServerPanel(!showServerPanel); setShowEpisodePanel(false); }}
             aria-label="Servers"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -195,6 +345,73 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           onTouchStart={handleTouchZoneTap}
           onClick={handleTouchZoneTap}
         />
+
+        {showEpisodePanel && isTV && (
+          <div className="player-episode-panel">
+            <div className="player-episode-panel-header">
+              <span>Episodes</span>
+              <select
+                className="player-episode-season-select"
+                value={episodesSeason}
+                onChange={(e) => setEpisodesSeason(Number(e.target.value))}
+              >
+                {validSeasons.map((s) => (
+                  <option key={s.id} value={s.season_number}>
+                    Season {s.season_number}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="player-episode-list">
+              {episodesLoading ? (
+                <div className="episode-loading">
+                  <div className="player-loading-spinner" />
+                </div>
+              ) : episodes.length === 0 ? (
+                <div className="episode-error">
+                  <p>No episodes found</p>
+                </div>
+              ) : (
+                episodes.map((ep) => {
+                  const isCurrent = ep.episode_number === episode && episodesSeason === season;
+                  return (
+                    <button
+                      key={ep.id}
+                      className={`player-episode-item ${isCurrent ? 'current' : ''}`}
+                      onClick={() => goToEpisode(episodesSeason, ep.episode_number)}
+                    >
+                      <div className="player-episode-thumb">
+                        {ep.still_path ? (
+                          <img
+                            src={img.backdrop(ep.still_path, 'w185')}
+                            alt={`E${ep.episode_number}`}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="player-episode-thumb-placeholder" />
+                        )}
+                        <span className="player-episode-num">{ep.episode_number}</span>
+                        {isCurrent && (
+                          <div className="player-episode-playing">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="player-episode-info">
+                        <div className="player-episode-name">{ep.name || `Episode ${ep.episode_number}`}</div>
+                        {ep.overview && (
+                          <p className="player-episode-overview">{ep.overview}</p>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
 
         {showServerPanel && (
           <div className="player-server-panel">

@@ -1569,6 +1569,172 @@ body.player-active .back-to-top {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* === Prev / Next buttons disabled state === */
+.player-topbar-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* === Episode Panel (Mobile: bottom sheet inside player) === */
+.player-episode-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 60%;
+  background: #111;
+  border-radius: 16px 16px 0 0;
+  border-top: 1px solid #2a2a2a;
+  overflow: hidden;
+  animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.player-episode-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  border-bottom: 1px solid #222;
+}
+
+.player-episode-panel-header::before {
+  content: '';
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #444;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-episode-season-select {
+  background: #222;
+  color: var(--text-primary);
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.player-episode-season-select:focus {
+  border-color: var(--accent);
+}
+
+.player-episode-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-episode-item {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: left;
+  color: var(--text-secondary);
+  transition: background 0.15s ease;
+  min-height: 64px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.player-episode-item:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
+.player-episode-item.current {
+  background: rgba(229, 9, 20, 0.1);
+  color: white;
+}
+
+.player-episode-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 100px;
+  aspect-ratio: 16/9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #222;
+}
+
+.player-episode-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-episode-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #222;
+}
+
+.player-episode-num {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+}
+
+.player-episode-playing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(229, 9, 20, 0.7);
+}
+
+.player-episode-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-episode-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.player-episode-overview {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .player-error {
   position: absolute;
   inset: 0;
@@ -1682,6 +1848,42 @@ body.player-active .back-to-top {
     gap: 8px;
   }
 
+  .player-episode-panel {
+    bottom: auto;
+    top: 56px;
+    right: 16px;
+    left: auto;
+    width: 320px;
+    max-height: 60%;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    animation: slideDown 0.2s ease;
+    padding-bottom: 0;
+  }
+
+  .player-episode-panel-header::before {
+    display: none;
+  }
+
+  .player-episode-panel-header {
+    padding: 10px 14px 8px;
+    font-size: 0.72rem;
+  }
+
+  .player-episode-list {
+    padding: 4px;
+    max-height: calc(60vh - 48px);
+  }
+
+  .player-episode-item {
+    padding: 6px 8px;
+    min-height: 56px;
+  }
+
+  .player-episode-thumb {
+    width: 90px;
+  }
+
   .player-loading {
     font-size: 0.85rem;
   }
@@ -1776,6 +1978,42 @@ body.player-active .back-to-top {
   .player-server-item:hover {
     background: #1c1c1c;
     transform: translateX(2px);
+  }
+
+  .player-episode-panel {
+    bottom: auto;
+    top: 56px;
+    right: 20px;
+    left: auto;
+    width: 340px;
+    max-height: 60%;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    animation: slideDown 0.2s ease;
+    padding-bottom: 0;
+  }
+
+  .player-episode-panel-header::before {
+    display: none;
+  }
+
+  .player-episode-panel-header {
+    padding: 10px 14px 8px;
+    font-size: 0.72rem;
+  }
+
+  .player-episode-list {
+    padding: 4px;
+    max-height: calc(60vh - 48px);
+  }
+
+  .player-episode-item {
+    padding: 6px 8px;
+    min-height: 56px;
+  }
+
+  .player-episode-thumb {
+    width: 90px;
   }
 
   .player-loading {
@@ -1874,6 +2112,42 @@ body.player-active .back-to-top {
     transform: translateX(2px);
   }
 
+  .player-episode-panel {
+    bottom: auto;
+    top: 60px;
+    right: 24px;
+    left: auto;
+    width: 360px;
+    max-height: 65%;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    animation: slideDown 0.2s ease;
+    padding-bottom: 0;
+  }
+
+  .player-episode-panel-header::before {
+    display: none;
+  }
+
+  .player-episode-panel-header {
+    padding: 12px 16px 8px;
+    font-size: 0.75rem;
+  }
+
+  .player-episode-list {
+    padding: 6px;
+    max-height: calc(65vh - 48px);
+  }
+
+  .player-episode-item {
+    padding: 8px 10px;
+    min-height: 60px;
+  }
+
+  .player-episode-thumb {
+    width: 100px;
+  }
+
   .player-loading-spinner {
     width: 40px;
     height: 40px;
@@ -1895,6 +2169,11 @@ body.player-active .back-to-top {
   .player-server-panel {
     right: 32px;
     width: 320px;
+  }
+
+  .player-episode-panel {
+    right: 32px;
+    width: 380px;
   }
 }
 
@@ -2030,6 +2309,22 @@ body.player-active .back-to-top {
 
   .player-server-panel {
     max-height: 50vh;
+  }
+
+  .player-episode-panel {
+    max-height: 55vh;
+  }
+
+  .player-episode-thumb {
+    width: 80px;
+  }
+
+  .player-episode-name {
+    font-size: 0.78rem;
+  }
+
+  .player-episode-overview {
+    display: none;
   }
 
   .player-server-item {

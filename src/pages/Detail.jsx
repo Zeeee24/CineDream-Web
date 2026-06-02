@@ -107,6 +107,8 @@ export default function Detail() {
           title={title}
           posterPath={data.poster_path}
           backdropPath={data.backdrop_path}
+          seasons={isTV ? seasons : undefined}
+          onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
           onClose={() => setShowPlayer(false)}
         />
       ) : (
