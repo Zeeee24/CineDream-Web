@@ -11,7 +11,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const playerRef = useRef(null);
+  const hideTimerRef = useRef(null);
 
   const handleClose = useCallback(() => {
     try {
@@ -32,6 +34,32 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     onClose();
   }, [tmdbId, title, posterPath, backdropPath, mediaType, season, episode, onClose]);
 
+  function showControls() {
+    setControlsVisible(true);
+    clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      if (!showServerPanel) setControlsVisible(false);
+    }, 4000);
+  }
+
+  function handlePlayerMouseMove() {
+    showControls();
+  }
+
+  function handlePlayerTouchStart() {
+    if (controlsVisible) {
+      setControlsVisible(false);
+      clearTimeout(hideTimerRef.current);
+    } else {
+      showControls();
+    }
+  }
+
+  useEffect(() => {
+    showControls();
+    return () => clearTimeout(hideTimerRef.current);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     document.body.classList.add('player-active');
     checkAllServers().then((h) => {
@@ -42,7 +70,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     });
 
-    // Scroll player into view
     if (playerRef.current) {
       playerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -53,12 +80,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         else handleClose();
         return;
       }
-      if (showServerPanel && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-        e.preventDefault();
-        setActiveServer((prev) => {
-          if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
-          return (prev - 1 + allServers.length) % allServers.length;
-        });
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        showControls();
+        if (showServerPanel) {
+          e.preventDefault();
+          setActiveServer((prev) => {
+            if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
+            return (prev - 1 + allServers.length) % allServers.length;
+          });
+        }
       }
       if (showServerPanel && e.key === 'Enter') {
         setIframeKey((k) => k + 1);
@@ -94,6 +124,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     }
     if (showServerPanel) {
+      setControlsVisible(true);
+      clearTimeout(hideTimerRef.current);
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
@@ -114,12 +146,20 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setLoading(true);
     setLoadError(false);
     setShowServerPanel(false);
+    showControls();
   }
 
   return (
-    <div className="player-section" ref={playerRef}>
-      <div className="player-viewport">
-        <div className="player-topbar">
+    <div
+      className="player-section"
+      ref={playerRef}
+      onMouseMove={handlePlayerMouseMove}
+    >
+      <div
+        className="player-viewport"
+        onTouchStart={handlePlayerTouchStart}
+      >
+        <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
           <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -127,7 +167,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           </button>
           <div className="player-topbar-title">
             {title || 'Now Playing'}
-            {mediaType === 'tv' && <span className="player-topbar-episode"> S{season} E{episode}</span>}
+            {mediaType === 'tv' && <span className="player-topbar-episode"> S{season}E{episode}</span>}
           </div>
           <button
             className={`player-topbar-btn server-toggle ${showServerPanel ? 'active' : ''}`}
