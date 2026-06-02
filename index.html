@@ -1,27 +1,27 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" /CineDream-Web/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" /CineDream-Web/>
-    <meta name="theme-color" content="#000000" /CineDream-Web/>
-    <meta name="apple-mobile-web-app-capable" content="yes" /CineDream-Web/>
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /CineDream-Web/>
-    <meta name="description" content="CineDream - Watch movies and TV show trailers, discover what to watch next." /CineDream-Web/>
-    <link rel="icon" type="image/CineDream-Web/svg+xml" href="/CineDream-Web/favicon.svg" /CineDream-Web/>
-    <link rel="apple-touch-icon" href="/CineDream-Web/favicon.svg" /CineDream-Web/>
-    <link rel="manifest" href="/CineDream-Web/manifest.json" /CineDream-Web/>
-    <title>CineDream</CineDream-Web/title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="CineDream - Watch movies and TV show trailers, discover what to watch next." />
+    <link rel="icon" type="image/svg+xml" href="/CineDream-Web/favicon.svg" />
+    <link rel="apple-touch-icon" href="/CineDream-Web/favicon.svg" />
+    <link rel="manifest" href="/CineDream-Web/manifest.json" />
+    <title>CineDream</title>
     <style>
       body { background: #000; margin: 0; }
-    </CineDream-Web/style>
-  </CineDream-Web/head>
+    </style>
+  </head>
   <body>
-    <div id="root"></CineDream-Web/div>
-    <script type="module" src="/CineDream-Web/src/CineDream-Web/main.jsx"></CineDream-Web/script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/CineDream-Web/sw.js').catch(() => {});
       }
-    </CineDream-Web/script>
-  </CineDream-Web/body>
-</CineDream-Web/html>
+    </script>
+  </body>
+</html>

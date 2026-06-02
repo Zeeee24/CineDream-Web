@@ -13,13 +13,13 @@
     {
       "src": "/CineDream-Web/favicon.svg",
       "sizes": "any",
-      "type": "image/CineDream-Web/svg+xml",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
       "src": "/CineDream-Web/favicon.svg",
       "sizes": "any",
-      "type": "image/CineDream-Web/svg+xml",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ]
