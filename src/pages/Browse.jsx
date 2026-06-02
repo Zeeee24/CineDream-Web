@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { discoverMovies, discoverTV, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
@@ -12,6 +13,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function Browse() {
+  const navigate = useNavigate();
   const [type, setType] = useState('movie');
   const [genreId, setGenreId] = useState('');
   const [sortBy, setSortBy] = useState('popularity.desc');
@@ -120,6 +122,11 @@ export default function Browse() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="browse-page">
+      <button className="detail-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+      </button>
       <div className="browse-header">
         <h1 className="browse-title">Browse</h1>
         <div className="filter-chips">

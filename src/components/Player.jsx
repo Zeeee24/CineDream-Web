@@ -366,7 +366,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                 <line x1="2" y1="9" x2="22" y2="9" />
                 <line x1="2" y1="15" x2="22" y2="15" />
               </svg>
-              <span className="server-toggle-label">Episodes</span>
+              <span className="server-toggle-label">S{season} E{episode}</span>
             </button>
           )}
           <button
