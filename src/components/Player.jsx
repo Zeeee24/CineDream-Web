@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
-import { hapticLight, hapticMedium } from '../utils/haptics';
+import { hapticLight } from '../utils/haptics';
 
 const allServers = getServers();
 
@@ -18,13 +18,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [showSkipIntro, setShowSkipIntro] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const playerRef = useRef(null);
   const viewportRef = useRef(null);
   const hideTimerRef = useRef(null);
-  const skipTimerRef = useRef(null);
 
   const isTV = mediaType === 'tv';
   const validSeasons = (seasons || []).filter((s) => s.season_number > 0);
@@ -271,22 +269,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
   }, [season]);
 
-  useEffect(() => {
-    if (!loading) {
-      skipTimerRef.current = setTimeout(() => {
-        if (isTV) setShowSkipIntro(true);
-      }, 30000);
-    }
-    return () => clearTimeout(skipTimerRef.current);
-  }, [loading, iframeKey]);
-
-  useEffect(() => {
-    if (showSkipIntro) {
-      const hideTimer = setTimeout(() => setShowSkipIntro(false), 10000);
-      return () => clearTimeout(hideTimer);
-    }
-  }, [showSkipIntro]);
-
   function handleMuteToggle() {
     hapticLight();
     setIsMuted((m) => !m);
@@ -301,11 +283,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
       }
     }
-  }
-
-  function handleSkipIntro() {
-    hapticMedium();
-    setShowSkipIntro(false);
   }
 
   if (!imdbId && !tmdbId) return null;
@@ -557,12 +534,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             </svg>
             <span style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>Tap to unmute</span>
           </div>
-        )}
-
-        {showSkipIntro && (
-          <button className="player-skip-btn" onClick={handleSkipIntro}>
-            Skip Intro
-          </button>
         )}
 
         {loadError && (
