@@ -6,9 +6,14 @@ import { hapticLight } from '../utils/haptics';
 
 const allServers = getServers();
 
-export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose, activeServer: initialServer, setActiveServer: setGlobalServer }) {
-  const [activeServer, setActiveServer] = useState(initialServer || 0);
+export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose }) {
+  const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
+  const [showServerPanel, setShowServerPanel] = useState(false);
+  const [showEpisodePanel, setShowEpisodePanel] = useState(false);
+  const [episodes, setEpisodes] = useState([]);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [episodesSeason, setEpisodesSeason] = useState(season || 1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
@@ -164,11 +169,26 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     function handleKey(e) {
       if (e.key === 'Escape') {
-        window.history.back();
+        if (showEpisodePanel) setShowEpisodePanel(false);
+        else if (showServerPanel) setShowServerPanel(false);
+        else window.history.back();
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         showControls();
+        if (showServerPanel) {
+          e.preventDefault();
+          setActiveServer((prev) => {
+            if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
+            return (prev - 1 + allServers.length) % allServers.length;
+          });
+        }
+      }
+      if (showServerPanel && e.key === 'Enter') {
+        setIframeKey((k) => k + 1);
+        setLoading(true);
+        setLoadError(false);
+        setShowServerPanel(false);
       }
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
@@ -186,7 +206,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     window.history.pushState({ playerOpen: true }, '');
     function handlePopState() {
-      handleClose();
+      if (showEpisodePanel) setShowEpisodePanel(false);
+      else if (showServerPanel) setShowServerPanel(false);
+      else handleClose();
     }
 
     window.addEventListener('popstate', handlePopState);
@@ -197,14 +219,35 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [handleClose]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handleClose, showServerPanel, showEpisodePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (e.target.closest('.player-topbar-btn')) return;
+      if (showServerPanel) {
+        const panel = document.querySelector('.player-server-panel');
+        if (panel && !panel.contains(e.target)) {
+          setShowServerPanel(false);
+        }
+      }
+      if (showEpisodePanel) {
+        const panel = document.querySelector('.player-episode-panel');
+        if (panel && !panel.contains(e.target)) {
+          setShowEpisodePanel(false);
+        }
+      }
     }
-    // No longer needing to check for panel clicks as panels are gone
-  }, []);
+    if (showServerPanel || showEpisodePanel) {
+      setControlsVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
+      clearTimeout(hideTimerRef.current);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showServerPanel, showEpisodePanel]);
 
   useEffect(() => {
     if (!showEpisodePanel || !isTV || !tmdbId) return;
@@ -256,10 +299,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
   function switchServer(index) {
     setActiveServer(index);
-    setGlobalServer?.(index);
     setIframeKey((k) => k + 1);
     setLoading(true);
     setLoadError(false);
+    setShowServerPanel(false);
     showControls();
   }
 

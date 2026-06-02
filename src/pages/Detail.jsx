@@ -13,7 +13,6 @@ import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
 import { getRating, toggleRating } from '../services/ratings';
 import { hapticLight } from '../utils/haptics';
 import EpisodeGrid from '../components/EpisodeGrid';
-import { getServers } from '../services/servers';
 
 export default function Detail() {
   const { type, id } = useParams();
@@ -27,7 +26,6 @@ export default function Detail() {
   const [showPlayer, setShowPlayer] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
-  const [activeServer, setActiveServer] = useState(0);
   const [, setListVersion] = useState(0);
   const [, setRatingVersion] = useState(0);
   const [scrollY, setScrollY] = useState(0);
@@ -125,7 +123,6 @@ export default function Detail() {
     (v) => v.type === 'Trailer' && v.site === 'YouTube'
   )?.key || videos.find((v) => v.site === 'YouTube')?.key || null;
 
-  const allServers = getServers();
   const infoLine = formatDetailInfo(year, rating, runtime, cert);
   const seasons = data.seasons || [];
 
@@ -183,8 +180,6 @@ export default function Detail() {
           seasons={isTV ? seasons : undefined}
           onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
           onClose={() => setShowPlayer(false)}
-          activeServer={activeServer}
-          setActiveServer={setActiveServer}
         />
       ) : (
         <div className="detail-backdrop-wrapper">
@@ -227,17 +222,6 @@ export default function Detail() {
             <p className="detail-overview">{data.overview}</p>
 
              <div className="detail-actions">
-               <div className="server-selector-wrapper">
-                 <select 
-                   className="server-select" 
-                   value={activeServer} 
-                   onChange={(e) => setActiveServer(Number(e.target.value))}
-                 >
-                   {allServers.map((s, i) => (
-                     <option key={s.id} value={i}>{s.name}</option>
-                   ))}
-                 </select>
-               </div>
                <button
                  className="btn btn-primary btn-large"
                  onClick={handlePlayNow}
