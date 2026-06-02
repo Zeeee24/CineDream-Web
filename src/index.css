@@ -1524,6 +1524,10 @@ body.player-active .back-to-top {
   display: none !important;
 }
 
+body.player-active .main {
+  padding-top: 0 !important;
+}
+
 .player-section {
   width: 100%;
   background: #000;
@@ -1806,6 +1810,12 @@ body.player-active .back-to-top {
 .player-full-overlay.controls-down {
   pointer-events: auto;
   background: transparent;
+}
+
+@media (min-width: 768px) {
+  .player-full-overlay {
+    pointer-events: none !important;
+  }
 }
 
 /* === Prev / Next buttons disabled state === */
