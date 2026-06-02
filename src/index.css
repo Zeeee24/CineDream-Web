@@ -1666,17 +1666,31 @@ body.player-active {
   display: none;
 }
 
+.episode-toggle-label {
+  display: none;
+}
+
 .player-topbar-btn .server-toggle-label,
 .player-topbar-btn.safe-mode-toggle .server-toggle-label {
   display: inline;
 }
 
-.player-topbar-btn .server-toggle-label {
-  display: none;
+.player-topbar-btn .episode-toggle-label {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .player-topbar-btn .episode-toggle-label {
+    display: none;
+  }
 }
 
 @media (min-width: 769px) {
   .player-topbar-btn .server-toggle-label {
+    display: inline;
+  }
+  
+  .player-topbar-btn .episode-toggle-label {
     display: inline;
   }
 }
@@ -1892,6 +1906,7 @@ body.player-active {
   padding-bottom: env(safe-area-inset-bottom);
   display: flex;
   flex-direction: column;
+  min-height: 200px;
 }
 
 .player-episode-panel-header {
