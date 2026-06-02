@@ -33,6 +33,12 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   const year = getYear(item.release_date || item.first_air_date);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
   const runtime = item.runtime || null;
+  const isRecent = item.release_date
+    ? new Date(item.release_date) > new Date(Date.now() - 90 * 86400000)
+    : item.first_air_date
+    ? new Date(item.first_air_date) > new Date(Date.now() - 90 * 86400000)
+    : false;
+  const isTrending = item.vote_count > 1000 && item.vote_average >= 7.5;
 
   function handlePlay() {
     navigate(`/${mediaType}/${item.id}?play=true`);
@@ -67,6 +73,11 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
         <div className="hero-gradient" />
       </div>
       <div className="hero-content">
+        <div className="hero-badges">
+          {isRecent && <span className="hero-badge hero-badge-new">New</span>}
+          {isTrending && <span className="hero-badge hero-badge-trending">Trending</span>}
+          {mediaType === 'tv' && <span className="hero-badge hero-badge-type">Series</span>}
+        </div>
         <h1 className="hero-title">{title}</h1>
         <div className="hero-meta">
           {year && <span>{year}</span>}

@@ -59,6 +59,11 @@ export default function MediaCard({ item, index, showRank, progress }) {
           </div>
         )}
         <div className="card-overlay">
+          <div className="card-play-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
           {rating && (
             <div className="card-rating">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">

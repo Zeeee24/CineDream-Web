@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import Layout from './components/Layout';
+import ScrollProgress from './components/ScrollProgress';
+import BackToTop from './components/BackToTop';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Browse from './pages/Browse';
@@ -31,6 +33,8 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter basename="/CineDream-Web">
+      <ScrollProgress />
+      <BackToTop />
       <Layout>
         <AnimatedRoutes />
       </Layout>

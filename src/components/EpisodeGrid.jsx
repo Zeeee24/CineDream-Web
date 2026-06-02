@@ -5,6 +5,7 @@ export default function EpisodeGrid({ tvId, seasons, onPlayEpisode }) {
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const validSeasons = seasons.filter((s) => s.season_number > 0);
 
@@ -12,11 +13,15 @@ export default function EpisodeGrid({ tvId, seasons, onPlayEpisode }) {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setError(false);
       try {
         const data = await getTVSeason(tvId, selectedSeason);
         if (!cancelled) setEpisodes(data.episodes || []);
       } catch {
-        if (!cancelled) setEpisodes([]);
+        if (!cancelled) {
+          setEpisodes([]);
+          setError(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,6 +50,16 @@ export default function EpisodeGrid({ tvId, seasons, onPlayEpisode }) {
       {loading ? (
         <div className="episode-loading">
           <div className="player-loading-spinner" />
+        </div>
+      ) : error ? (
+        <div className="episode-error">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+          <p>Failed to load episodes</p>
+          <button className="btn btn-secondary" onClick={() => setSelectedSeason(selectedSeason)} style={{ fontSize: '0.8rem', padding: '6px 16px' }}>
+            Retry
+          </button>
         </div>
       ) : (
         <div className="episode-list">

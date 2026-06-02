@@ -21,15 +21,9 @@ export function SkeletonHero() {
   return <div className="skeleton skeleton-hero" />;
 }
 
-export function SkeletonGrid({ count = 10, cols = 4 }) {
+export function SkeletonGrid({ count = 10 }) {
   return (
-    <div
-      className="content-grid"
-      style={{
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        padding: '0 20px',
-      }}
-    >
+    <div className="content-grid skeleton-grid-animate">
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonCard key={i} height={260} />
       ))}

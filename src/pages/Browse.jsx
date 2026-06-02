@@ -1,20 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { discoverMovies, discoverTV, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
-import { useDevice } from '../hooks/useDevice';
 import PullToRefresh from '../components/PullToRefresh';
+
+const SORT_OPTIONS = [
+  { value: 'popularity.desc', label: 'Popular' },
+  { value: 'vote_average.desc', label: 'Top Rated' },
+  { value: 'primary_release_date.desc', label: 'Newest' },
+  { value: 'revenue.desc', label: 'Revenue' },
+];
 
 export default function Browse() {
   const [type, setType] = useState('movie');
   const [genreId, setGenreId] = useState('');
+  const [sortBy, setSortBy] = useState('popularity.desc');
   const [items, setItems] = useState([]);
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [genresLoading, setGenresLoading] = useState(true);
-  const { isTV, isTablet, isDesktop } = useDevice();
-
-  const cols = isTV ? 8 : isDesktop ? 6 : isTablet ? 4 : 2;
+  const [animateKey, setAnimateKey] = useState(0);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
     async function loadGenres() {
@@ -33,30 +42,74 @@ export default function Browse() {
   }, [type]);
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
       setLoading(true);
+      setPage(1);
+      setHasMore(true);
       try {
-        const params = {};
+        const params = { sort_by: sortBy, page: 1 };
         if (genreId) params.with_genres = genreId;
         const data = type === 'movie' ? await discoverMovies(params) : await discoverTV(params);
+        if (cancelled) return;
         setItems(data.results || []);
+        setHasMore((data.results || []).length >= 20);
+        setAnimateKey((k) => k + 1);
       } catch (err) {
         console.error('Failed to discover:', err);
-        setItems([]);
+        if (!cancelled) setItems([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, [type, genreId]);
+    return () => { cancelled = true; };
+  }, [type, genreId, sortBy]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const params = { sort_by: sortBy, page: nextPage };
+      if (genreId) params.with_genres = genreId;
+      const data = type === 'movie' ? await discoverMovies(params) : await discoverTV(params);
+      const newItems = data.results || [];
+      setItems((prev) => [...prev, ...newItems]);
+      setPage(nextPage);
+      setHasMore(newItems.length >= 20);
+    } catch (err) {
+      console.error('Failed to load more:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [page, sortBy, genreId, type, loadingMore, hasMore]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMore();
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, loadMore]);
 
   async function handleRefresh() {
     setLoading(true);
+    setPage(1);
+    setHasMore(true);
     try {
-      const params = {};
+      const params = { sort_by: sortBy, page: 1 };
       if (genreId) params.with_genres = genreId;
       const data = type === 'movie' ? await discoverMovies(params) : await discoverTV(params);
       setItems(data.results || []);
+      setHasMore((data.results || []).length >= 20);
     } catch {
       /* ignore */
     } finally {
@@ -101,23 +154,41 @@ export default function Browse() {
               </button>
             ))}
         </div>
+        <div className="filter-chips" style={{ marginTop: 4 }}>
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              className={`chip ${sortBy === opt.value ? 'active' : ''}`}
+              onClick={() => setSortBy(opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="browse-content">
         {loading ? (
-          <SkeletonGrid count={20} cols={cols} />
+          <SkeletonGrid count={20} />
         ) : items.length > 0 ? (
-          <div
-            className="content-grid"
-            style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-          >
-            {items.map((item) => (
-              <MediaCard key={item.id} item={{ ...item, media_type: type }} />
-            ))}
-          </div>
+          <>
+            <div className="content-grid content-swap-enter" key={animateKey}>
+              {items.map((item) => (
+                <MediaCard key={item.id} item={{ ...item, media_type: type }} />
+              ))}
+            </div>
+            {loadingMore && <SkeletonGrid count={10} />}
+            <div ref={sentinelRef} style={{ height: 1 }} />
+            {!hasMore && items.length > 0 && (
+              <div className="load-end">You've reached the end</div>
+            )}
+          </>
         ) : (
           <div className="empty-state">
-            <p>No content found</p>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.2">
+              <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
+            </svg>
+            <p>No content found for this filter</p>
           </div>
         )}
       </div>

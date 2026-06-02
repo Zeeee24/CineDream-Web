@@ -8,12 +8,9 @@ export default function ActorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isTV, isTablet, isDesktop } = useDevice();
-
   const [person, setPerson] = useState(null);
   const [credits, setCredits] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const cols = isTV ? 8 : isDesktop ? 6 : isTablet ? 4 : 3;
 
   useEffect(() => {
     async function load() {
@@ -70,7 +67,7 @@ export default function ActorPage() {
             <h1 className="actor-name">{person.name}</h1>
             <div className="actor-meta">
               {person.known_for_department && <span>{knownFor}</span>}
-              {person.birthday && <span>Born {person.birthday}</span>}
+              {person.birthday && <span>Born {person.birthday}{person.deathday ? ` — Died ${person.deathday}` : ''}</span>}
               {person.place_of_birth && <span>{person.place_of_birth}</span>}
             </div>
             {person.biography && (
@@ -82,10 +79,7 @@ export default function ActorPage() {
         {credits.length > 0 && (
           <section className="actor-filmography">
             <h2 className="section-title">Filmography</h2>
-            <div
-              className="content-grid"
-              style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-            >
+            <div className="content-grid">
               {credits.map((item) => {
                 const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
                 const title = item.title || item.name;
