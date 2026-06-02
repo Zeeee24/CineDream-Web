@@ -44,24 +44,6 @@ const servers = [
     healthCheck: 'https://vidsrc.xyz',
     usesTmdbId: true,
   },
-  {
-    id: '2embed',
-    name: 'Server 6 — 2Embed',
-    label: 'SD',
-    movie: (id) => `https://www.2embed.cc/embed/${id}`,
-    tv: (id, season, episode) => `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
-    healthCheck: 'https://www.2embed.cc',
-    usesTmdbId: true,
-  },
-  {
-    id: 'superembed',
-    name: 'Server 7 — SuperEmbed',
-    label: 'SD',
-    movie: (id) => `https://www.superembed.stream/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://www.superembed.stream/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://www.superembed.stream',
-    usesTmdbId: true,
-  },
 ];
 
 const serverHealth = {};
