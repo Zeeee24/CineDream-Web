@@ -3,6 +3,7 @@ import { searchMulti, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import { useDevice } from '../hooks/useDevice';
+import PullToRefresh from '../components/PullToRefresh';
 
 function debounce(fn, delay) {
   let timer;
@@ -70,6 +71,23 @@ export default function Search() {
     doSearchRef(val, setResults, setLoading);
   }
 
+  async function handleRefresh() {
+    if (query.trim()) {
+      setLoading(true);
+      try {
+        const data = await searchMulti(query);
+        const items = (data.results || []).filter(
+          (r) => r.media_type === 'movie' || r.media_type === 'tv'
+        );
+        setResults(items);
+      } catch {
+        /* ignore */
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
+
   let filtered = results;
   if (filter === 'movies') filtered = filtered.filter((r) => r.media_type === 'movie');
   if (filter === 'tv') filtered = filtered.filter((r) => r.media_type === 'tv');
@@ -78,6 +96,7 @@ export default function Search() {
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="search-page">
       <div className="search-header">
         <div className="search-input-wrapper">
@@ -151,5 +170,6 @@ export default function Search() {
         )}
       </div>
     </div>
+    </PullToRefresh>
   );
 }

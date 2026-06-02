@@ -127,3 +127,15 @@ export async function getTVWatchProviders(tvId) {
     return {};
   }
 }
+
+export async function getTVSeason(tvId, seasonNumber) {
+  return fetchWithCache(`/tv/${tvId}/season/${seasonNumber}`);
+}
+
+export async function getPersonDetails(personId) {
+  return fetchWithCache(`/person/${personId}`);
+}
+
+export async function getPersonCredits(personId) {
+  return fetchWithCache(`/person/${personId}/combined_credits`);
+}

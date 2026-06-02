@@ -9,6 +9,7 @@ import TrailerModal from '../components/TrailerModal';
 import Player from '../components/Player';
 import { SkeletonHero } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
+import EpisodeGrid from '../components/EpisodeGrid';
 
 export default function Detail() {
   const { type, id } = useParams();
@@ -140,35 +141,6 @@ export default function Detail() {
             {data.tagline && <p className="detail-tagline">&quot;{data.tagline}&quot;</p>}
             <p className="detail-overview">{data.overview}</p>
 
-            {isTV && seasons.length > 0 && (
-              <div className="detail-episodes">
-                <div className="episode-selectors">
-                  <select
-                    className="season-select"
-                    value={selectedSeason}
-                    onChange={(e) => { setSelectedSeason(Number(e.target.value)); setSelectedEpisode(1); }}
-                  >
-                    {seasons.filter(s => s.season_number > 0).map((s) => (
-                      <option key={s.id} value={s.season_number}>
-                        Season {s.season_number}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="season-select"
-                    value={selectedEpisode}
-                    onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-                  >
-                    {Array.from({ length: seasons.find(s => s.season_number === selectedSeason)?.episode_count || 1 }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        Episode {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-
             <div className="detail-actions">
               <button
                 className="btn btn-primary btn-large"
@@ -213,6 +185,18 @@ export default function Detail() {
           </div>
         </div>
 
+        {isTV && seasons.length > 0 && (
+          <EpisodeGrid
+            tvId={id}
+            seasons={seasons}
+            onPlayEpisode={(s, e) => {
+              setSelectedSeason(s);
+              setSelectedEpisode(e);
+              setShowPlayer(true);
+            }}
+          />
+        )}
+
         {trailerKey && (
           <section className="detail-trailer-section">
             <h2 className="section-title">Trailer</h2>
@@ -241,7 +225,7 @@ export default function Detail() {
               {cast.map((person) => {
                 const profileUrl = img.profile(person.profile_path);
                 return (
-                  <div key={person.id} className="cast-card">
+                  <div key={person.id} className="cast-card" onClick={() => navigate(`/person/${person.id}`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/person/${person.id}`); } }}>
                     {profileUrl ? (
                       <img src={profileUrl} alt={person.name} className="cast-photo" loading="lazy" />
                     ) : (

@@ -3,6 +3,7 @@ import { discoverMovies, discoverTV, getMovieGenres, getTVGenres } from '../serv
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import { useDevice } from '../hooks/useDevice';
+import PullToRefresh from '../components/PullToRefresh';
 
 export default function Browse() {
   const [type, setType] = useState('movie');
@@ -49,7 +50,22 @@ export default function Browse() {
     load();
   }, [type, genreId]);
 
+  async function handleRefresh() {
+    setLoading(true);
+    try {
+      const params = {};
+      if (genreId) params.with_genres = genreId;
+      const data = type === 'movie' ? await discoverMovies(params) : await discoverTV(params);
+      setItems(data.results || []);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="browse-page">
       <div className="browse-header">
         <h1 className="browse-title">Browse</h1>
@@ -106,5 +122,6 @@ export default function Browse() {
         )}
       </div>
     </div>
+    </PullToRefresh>
   );
 }
