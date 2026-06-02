@@ -170,7 +170,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       if (e.key === 'Escape') {
         if (showEpisodePanel) setShowEpisodePanel(false);
         else if (showServerPanel) setShowServerPanel(false);
-        else handleClose();
+        else window.history.back();
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -312,7 +312,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         onTouchStart={handlePlayerTouchStart}
       >
         <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
-          <button className="player-topbar-btn" onClick={handleClose} aria-label="Close">
+          <button className="player-topbar-btn" onClick={() => window.history.back()} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

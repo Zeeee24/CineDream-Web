@@ -49,7 +49,7 @@ export default function ActorPage() {
   return (
     <div className="detail-page">
       <div className="actor-page">
-        <button className="detail-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+        <button className="detail-back-btn" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/'); }} aria-label="Go back">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
