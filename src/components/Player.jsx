@@ -143,7 +143,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     }
   }
 
-  function handleTouchZoneTap(e) {
+  function handleFullOverlayTap(e) {
     e.preventDefault();
     e.stopPropagation();
     showControls();
@@ -430,9 +430,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         </div>
 
         <div
-          className="player-touch-zone"
-          onTouchStart={handleTouchZoneTap}
-          onClick={handleTouchZoneTap}
+          className={`player-full-overlay ${controlsVisible ? 'controls-up' : 'controls-down'}`}
+          onTouchStart={handleFullOverlayTap}
+          onClick={handleFullOverlayTap}
         />
 
         {showEpisodePanel && isTV && (

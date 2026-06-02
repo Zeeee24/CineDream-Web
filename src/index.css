@@ -1761,17 +1761,21 @@ body.player-active .back-to-top {
   background: #000;
 }
 
-/* === Touch zone: sits above iframe to capture taps for showing controls === */
-.player-touch-zone {
+/* Full-viewport tap overlay — catches taps when controls are hidden */
+.player-full-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  padding-top: env(safe-area-inset-top);
-  z-index: 15;
-  pointer-events: auto;
+  inset: 0;
+  z-index: 18;
   -webkit-tap-highlight-color: transparent;
+}
+
+.player-full-overlay.controls-up {
+  pointer-events: none;
+}
+
+.player-full-overlay.controls-down {
+  pointer-events: auto;
+  background: transparent;
 }
 
 /* === Prev / Next buttons disabled state === */
@@ -2031,9 +2035,13 @@ body.player-active .back-to-top {
     pointer-events: none;
   }
 
-  .player-touch-zone {
-    height: 72px;
-    z-index: 24;
+  .player-topbar-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .player-topbar-title {
+    font-size: 0.8rem;
   }
 }
 
