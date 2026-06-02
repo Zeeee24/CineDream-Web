@@ -1,7 +1,7 @@
 const CACHE_NAME = 'cinedream-v1';
 const SHELL = [
-  '/CineDream-Web/',
-  '/CineDream-Web/index.html',
+  '/Cinedream/',
+  '/Cinedream/index.html',
 ];
 
 self.addEventListener('install', (e) => {
