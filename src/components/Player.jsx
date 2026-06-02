@@ -222,6 +222,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
   useEffect(() => {
     function handleClickOutside(e) {
+      if (e.target.closest('.player-topbar-btn')) return;
       if (showServerPanel) {
         const panel = document.querySelector('.player-server-panel');
         if (panel && !panel.contains(e.target)) {
