@@ -1677,6 +1677,9 @@ body.player-active {
 
 .player-topbar-btn .episode-toggle-label {
   display: inline;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
 @media (max-width: 768px) {

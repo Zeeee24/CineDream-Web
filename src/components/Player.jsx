@@ -261,7 +261,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       try {
         const data = await getTVSeason(tmdbId, episodesSeason);
         if (!cancelled) setEpisodes(data.episodes || []);
-      } catch {
+      } catch (err) {
+        console.error('Failed to load episodes:', err);
         if (!cancelled) setEpisodes([]);
       } finally {
         if (!cancelled) setEpisodesLoading(false);
@@ -358,7 +359,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           {isTV && (
             <button
               className={`player-topbar-btn ${showEpisodePanel ? 'active' : ''}`}
-              onClick={() => { setShowEpisodePanel(!showEpisodePanel); setShowServerPanel(false); }}
+              onClick={() => { 
+                console.log('Episode button clicked, current state:', showEpisodePanel);
+                setShowEpisodePanel(!showEpisodePanel); 
+                setShowServerPanel(false); 
+              }}
               aria-label="Episodes"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
