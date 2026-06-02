@@ -1286,7 +1286,30 @@ img {
 
 .detail-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
+}
+
+.server-selector-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.server-select {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid #333;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.server-select:focus {
+  border-color: var(--accent);
 }
 
 .detail-episodes {
@@ -1838,6 +1861,8 @@ body.player-active .main {
   overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
 }
 
 .player-episode-panel-header {
@@ -1883,6 +1908,7 @@ body.player-active .main {
 }
 
 .player-episode-list {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 8px;
@@ -1891,6 +1917,7 @@ body.player-active .main {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  touch-action: pan-y;
 }
 
 .player-episode-item {
@@ -2051,22 +2078,11 @@ body.player-active .main {
 
 /* ========== PLAYER RESPONSIVE: MOBILE (< 768px) ========== */
 @media (max-width: 767px) {
-  body.player-active .player-section {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    z-index: 2000;
-    width: 100vw;
-    height: calc(100vh - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
   .player-viewport {
     height: 100%;
     max-height: none;
   }
+
 
   .player-topbar {
     z-index: 25;
@@ -2229,7 +2245,8 @@ body.player-active .main {
     display: inline;
   }
 
-  .player-topbar-btn.server-toggle {
+  .player-topbar-btn.server-toggle,
+  .player-topbar-btn.safe-mode-toggle {
     width: auto;
     padding: 8px 16px;
     border-radius: 8px;
@@ -2362,7 +2379,8 @@ body.player-active .main {
     display: inline;
   }
 
-  .player-topbar-btn.server-toggle {
+  .player-topbar-btn.server-toggle,
+  .player-topbar-btn.safe-mode-toggle {
     width: auto;
     padding: 8px 16px;
     border-radius: 8px;
@@ -3260,7 +3278,17 @@ body.player-active .main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.episode-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.season-select-wrapper {
+  display: inline-block;
 }
 
 .episode-loading {

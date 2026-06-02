@@ -13,6 +13,7 @@ import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
 import { getRating, toggleRating } from '../services/ratings';
 import { hapticLight } from '../utils/haptics';
 import EpisodeGrid from '../components/EpisodeGrid';
+import { getServers } from '../services/servers';
 
 export default function Detail() {
   const { type, id } = useParams();
@@ -26,6 +27,7 @@ export default function Detail() {
   const [showPlayer, setShowPlayer] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
+  const [activeServer, setActiveServer] = useState(0);
   const [, setListVersion] = useState(0);
   const [, setRatingVersion] = useState(0);
   const [scrollY, setScrollY] = useState(0);
@@ -123,6 +125,7 @@ export default function Detail() {
     (v) => v.type === 'Trailer' && v.site === 'YouTube'
   )?.key || videos.find((v) => v.site === 'YouTube')?.key || null;
 
+  const allServers = getServers();
   const infoLine = formatDetailInfo(year, rating, runtime, cert);
   const seasons = data.seasons || [];
 
@@ -180,9 +183,11 @@ export default function Detail() {
           seasons={isTV ? seasons : undefined}
           onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
           onClose={() => setShowPlayer(false)}
+          activeServer={activeServer}
+          setActiveServer={setActiveServer}
         />
       ) : (
-      <div className="detail-backdrop-wrapper">
+        <div className="detail-backdrop-wrapper">
         <button className="detail-back-btn" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/'); }} aria-label="Go back">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -221,18 +226,29 @@ export default function Detail() {
             {data.tagline && <p className="detail-tagline">&quot;{data.tagline}&quot;</p>}
             <p className="detail-overview">{data.overview}</p>
 
-            <div className="detail-actions">
-              <button
-                className="btn btn-primary btn-large"
-                onClick={handlePlayNow}
-                onKeyDown={isTV ? handleKeyDown : undefined}
-                tabIndex={isTV ? 0 : undefined}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Play Now
-              </button>
+             <div className="detail-actions">
+               <div className="server-selector-wrapper">
+                 <select 
+                   className="server-select" 
+                   value={activeServer} 
+                   onChange={(e) => setActiveServer(Number(e.target.value))}
+                 >
+                   {allServers.map((s, i) => (
+                     <option key={s.id} value={i}>{s.name}</option>
+                   ))}
+                 </select>
+               </div>
+               <button
+                 className="btn btn-primary btn-large"
+                 onClick={handlePlayNow}
+                 onKeyDown={isTV ? handleKeyDown : undefined}
+                 tabIndex={isTV ? 0 : undefined}
+               >
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M8 5v14l11-7z" />
+                 </svg>
+                 Play Now
+               </button>
               {trailerKey && (
                 <button
                   className="btn btn-secondary btn-large"

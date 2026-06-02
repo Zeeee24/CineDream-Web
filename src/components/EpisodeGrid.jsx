@@ -33,18 +33,22 @@ export default function EpisodeGrid({ tvId, seasons, onPlayEpisode }) {
   return (
     <div className="episode-section">
       <div className="episode-header">
-        <h2 className="section-title">Episodes</h2>
-        <select
-          className="season-select"
-          value={selectedSeason}
-          onChange={(e) => setSelectedSeason(Number(e.target.value))}
-        >
-          {validSeasons.map((s) => (
-            <option key={s.id} value={s.season_number}>
-              Season {s.season_number}
-            </option>
-          ))}
-        </select>
+        <div className="episode-header-left">
+          <h2 className="section-title">Episodes</h2>
+          <div className="season-select-wrapper">
+            <select
+              className="season-select"
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(Number(e.target.value))}
+            >
+              {validSeasons.map((s) => (
+                <option key={s.id} value={s.season_number}>
+                  Season {s.season_number}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {loading ? (

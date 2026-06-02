@@ -6,17 +6,13 @@ import { hapticLight } from '../utils/haptics';
 
 const allServers = getServers();
 
-export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose }) {
-  const [activeServer, setActiveServer] = useState(0);
+export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose, activeServer: initialServer, setActiveServer: setGlobalServer }) {
+  const [activeServer, setActiveServer] = useState(initialServer || 0);
   const [health, setHealth] = useState({});
-  const [showServerPanel, setShowServerPanel] = useState(false);
-  const [showEpisodePanel, setShowEpisodePanel] = useState(false);
-  const [episodes, setEpisodes] = useState([]);
-  const [episodesLoading, setEpisodesLoading] = useState(false);
-  const [episodesSeason, setEpisodesSeason] = useState(season || 1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [safeMode, setSafeMode] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -168,26 +164,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     function handleKey(e) {
       if (e.key === 'Escape') {
-        if (showEpisodePanel) setShowEpisodePanel(false);
-        else if (showServerPanel) setShowServerPanel(false);
-        else window.history.back();
+        window.history.back();
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         showControls();
-        if (showServerPanel) {
-          e.preventDefault();
-          setActiveServer((prev) => {
-            if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
-            return (prev - 1 + allServers.length) % allServers.length;
-          });
-        }
-      }
-      if (showServerPanel && e.key === 'Enter') {
-        setIframeKey((k) => k + 1);
-        setLoading(true);
-        setLoadError(false);
-        setShowServerPanel(false);
       }
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
@@ -205,9 +186,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     window.history.pushState({ playerOpen: true }, '');
     function handlePopState() {
-      if (showEpisodePanel) setShowEpisodePanel(false);
-      else if (showServerPanel) setShowServerPanel(false);
-      else handleClose();
+      handleClose();
     }
 
     window.addEventListener('popstate', handlePopState);
@@ -218,35 +197,14 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [handleClose, showServerPanel, showEpisodePanel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handleClose]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (e.target.closest('.player-topbar-btn')) return;
-      if (showServerPanel) {
-        const panel = document.querySelector('.player-server-panel');
-        if (panel && !panel.contains(e.target)) {
-          setShowServerPanel(false);
-        }
-      }
-      if (showEpisodePanel) {
-        const panel = document.querySelector('.player-episode-panel');
-        if (panel && !panel.contains(e.target)) {
-          setShowEpisodePanel(false);
-        }
-      }
     }
-    if (showServerPanel || showEpisodePanel) {
-      setControlsVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
-      clearTimeout(hideTimerRef.current);
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [showServerPanel, showEpisodePanel]);
+    // No longer needing to check for panel clicks as panels are gone
+  }, []);
 
   useEffect(() => {
     if (!showEpisodePanel || !isTV || !tmdbId) return;
@@ -289,14 +247,19 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   if (!imdbId && !tmdbId) return null;
 
   const current = allServers[activeServer];
-  const embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode, tmdbId);
+  let embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode, tmdbId);
+  
+  if (current.id === 'ezvidapi') {
+    const separator = embedUrl.includes('?') ? '&' : '?';
+    embedUrl += `${separator}ref=${window.location.hostname}`;
+  }
 
   function switchServer(index) {
     setActiveServer(index);
+    setGlobalServer?.(index);
     setIframeKey((k) => k + 1);
     setLoading(true);
     setLoadError(false);
-    setShowServerPanel(false);
     showControls();
   }
 
@@ -371,6 +334,30 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               <line x1="6" y1="18" x2="6.01" y2="18" />
             </svg>
             <span className="server-toggle-label">Servers</span>
+          </button>
+          <button
+            className={`player-topbar-btn safe-mode-toggle ${safeMode ? 'active' : ''}`}
+            onClick={() => {
+              setSafeMode(!safeMode);
+              setLoading(true);
+              setLoadError(false);
+            }}
+            aria-label={safeMode ? "Disable Ad-Block" : "Enable Ad-Block"}
+            title={safeMode ? "Safe Mode: Pop-ups & Redirects Blocked" : "Normal Mode: Allows all server features"}
+          >
+            {safeMode ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <polyline points="9 11 11 13 15 9" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            )}
+            <span className="server-toggle-label">{safeMode ? "Safe Mode" : "Ad-Block Off"}</span>
           </button>
           <button
             className="player-topbar-btn"
@@ -512,19 +499,26 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             <span>Loading from {current.name}...</span>
           </div>
         )}
-
+        
         <iframe
-          key={iframeKey}
+          key={`${iframeKey}-${safeMode}`}
           src={embedUrl}
           title={title || 'Player'}
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; media"
+          sandbox={
+            safeMode 
+              ? (current.id === 'multiembed' || current.id === 'vidsrc-xyz' 
+                  ? "allow-scripts allow-same-origin" 
+                  : "allow-scripts allow-same-origin allow-forms allow-presentation") 
+              : undefined
+          }
           referrerPolicy="origin"
           className="player-iframe"
           onLoad={() => { setLoading(false); setLoadError(false); }}
           onError={() => { setLoading(false); setLoadError(true); }}
         />
-
+        
         {isMuted && (
           <div className="player-mute-overlay" onClick={handleMuteToggle}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">

@@ -35,15 +35,6 @@ const servers = [
     healthCheck: 'https://vidsrc.to',
     usesTmdbId: true,
   },
-  {
-    id: 'vidsrc-xyz',
-    name: 'Server 5 — VidSrc.xyz',
-    label: 'HD',
-    movie: (id) => `https://vidsrc.xyz/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://vidsrc.xyz/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://vidsrc.xyz',
-    usesTmdbId: true,
-  },
 ];
 
 const serverHealth = {};
