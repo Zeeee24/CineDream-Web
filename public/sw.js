@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinedream-v1';
+const CACHE_NAME = 'cinedream-v3';
 const SHELL = [
   '/',
   '/index.html',
