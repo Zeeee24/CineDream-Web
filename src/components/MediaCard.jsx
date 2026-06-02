@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { img } from '../services/tmdb';
 import { useDevice } from '../hooks/useDevice';
 import { useNavigate } from 'react-router-dom';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
 import { getRating, toggleRating } from '../services/ratings';
-import { hapticLight } from '../utils/haptics';
+import { hapticLight, hapticMedium } from '../utils/haptics';
 import { truncate } from '../utils/helpers';
+import useLongPress from '../hooks/useLongPress';
 
-export default function MediaCard({ item, index, showRank, progress, isHovered, isNeighbor, neighborDirection, onHoverEnter, onHoverLeave, inRow }) {
+export default function MediaCard({ item, index, showRank, progress, isHovered, isNeighbor, neighborDirection, onHoverEnter, onHoverLeave, inRow, onLongPress }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const { isTV } = useDevice();
   const navigate = useNavigate();
@@ -21,6 +23,21 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
 
   const inList = isInWatchlist(item.id);
   const myRating = getRating(item.id);
+  const [removing, setRemoving] = useState(false);
+
+  const longPressHandlers = useLongPress(
+    () => {
+      if (!onLongPress) return;
+      hapticMedium();
+      setRemoving(true);
+      setTimeout(() => onLongPress(item.id), 300);
+    },
+    {
+      delay: 500,
+      onStart: () => {},
+      onCancel: () => {},
+    }
+  );
 
   function handleClick() {
     hapticLight();
@@ -65,6 +82,7 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
     if (isHovered) cardClass += ' hovered';
     else if (isNeighbor) cardClass += ` neighbor-${neighborDirection}`;
   }
+  if (removing) cardClass += ' removing';
 
   return (
     <div
@@ -78,6 +96,7 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
       style={{ cursor: 'pointer' }}
       onMouseEnter={inRow ? () => onHoverEnter?.(index) : undefined}
       onMouseLeave={inRow ? onHoverLeave : undefined}
+      {...longPressHandlers}
     >
       {showRank && (
         <span className="rank-badge">{(index || 0) + 1}</span>
@@ -115,6 +134,13 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
           )}
           <div className="card-year">{year}</div>
         </div>
+        {removing && (
+          <div className="card-remove-overlay">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </div>
+        )}
       </div>
 
       {isHovered && inRow && (

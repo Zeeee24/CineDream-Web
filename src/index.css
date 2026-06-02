@@ -731,6 +731,36 @@ img {
   text-overflow: ellipsis;
 }
 
+/* === Long-press remove === */
+.card-remove-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.75);
+  backdrop-filter: blur(2px);
+  border-radius: 8px;
+  z-index: 5;
+  animation: cardRemovePulse 0.3s ease;
+}
+
+@keyframes cardRemovePulse {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.media-card.removing {
+  animation: cardShrinkOut 0.35s var(--ease-netflix) forwards;
+  pointer-events: none;
+}
+
+@keyframes cardShrinkOut {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0; }
+}
+
 .card-progress-bar {
   position: absolute;
   bottom: 0;

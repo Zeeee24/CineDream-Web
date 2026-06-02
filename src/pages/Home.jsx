@@ -13,7 +13,7 @@ import {
   getMovieDetails,
   getTVDetails,
 } from '../services/tmdb';
-import { getContinueWatching, getRecentlyViewed } from '../services/watchHistory';
+import { getContinueWatching, getRecentlyViewed, removeFromHistory } from '../services/watchHistory';
 import { getWatchlist } from '../services/watchlist';
 
 export default function Home() {
@@ -110,6 +110,11 @@ export default function Home() {
     load();
   }, []);
 
+  function handleRemoveFromHistory(tmdbId) {
+    removeFromHistory(tmdbId);
+    setHistoryTick((t) => t + 1);
+  }
+
   return (
     <div className="home-page">
       <HeroBanner items={data.hero} />
@@ -136,6 +141,7 @@ export default function Home() {
                       vote_average: 0,
                     }}
                     progress={item}
+                    onLongPress={handleRemoveFromHistory}
                   />
                 ))}
               </div>
@@ -164,6 +170,7 @@ export default function Home() {
                       vote_average: 0,
                     }}
                     progress={item.progressSeconds > 0 ? item : null}
+                    onLongPress={handleRemoveFromHistory}
                   />
                 ))}
               </div>
