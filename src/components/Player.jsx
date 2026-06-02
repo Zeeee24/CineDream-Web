@@ -52,7 +52,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [tmdbId, title, posterPath, backdropPath, isTV, season, episode, onClose]);
 
   function goToEpisode(newSeason, newEpisode) {
+    console.log('goToEpisode called with:', newSeason, newEpisode);
     if (onEpisodeChange) onEpisodeChange(newSeason, newEpisode);
+    setEpisodesSeason(newSeason);
     setShowEpisodePanel(false);
     setLoading(true);
     setLoadError(false);
@@ -468,7 +470,12 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               <select
                 className="player-episode-season-select"
                 value={episodesSeason}
-                onChange={(e) => setEpisodesSeason(Number(e.target.value))}
+                onChange={(e) => {
+                  const newSeason = Number(e.target.value);
+                  console.log('Season changed to:', newSeason);
+                  setEpisodesSeason(newSeason);
+                  if (onEpisodeChange) onEpisodeChange(newSeason, 1);
+                }}
               >
                 {validSeasons.map((s) => (
                   <option key={s.id} value={s.season_number}>
