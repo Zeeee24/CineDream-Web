@@ -3,13 +3,30 @@ import { getYouTubeEmbedUrl } from '../services/youtube';
 
 export default function TrailerModal({ videoKey, onClose }) {
   const overlayRef = useRef(null);
+  const closeBtnRef = useRef(null);
 
   useEffect(() => {
     function handleKey(e) {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab') {
+        const focusable = overlayRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
+    closeBtnRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
@@ -32,7 +49,7 @@ export default function TrailerModal({ videoKey, onClose }) {
       aria-label="Video player"
     >
       <div className="trailer-modal">
-        <button className="trailer-close" onClick={onClose} aria-label="Close player">
+        <button ref={closeBtnRef} className="trailer-close" onClick={onClose} aria-label="Close player">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
           </svg>
