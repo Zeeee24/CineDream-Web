@@ -552,8 +552,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           sandbox={
             safeMode 
               ? (current.id === 'multiembed' || current.id === 'vidsrc-xyz' 
-                  ? "allow-scripts allow-same-origin" 
-                  : "allow-scripts allow-same-origin allow-forms allow-presentation") 
+                  ? "allow-scripts allow-same-origin allow-popups" 
+                  : "allow-scripts allow-same-origin allow-forms allow-presentation allow-popups") 
               : undefined
           }
           referrerPolicy="origin"
