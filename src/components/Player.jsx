@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
+import WatchParty from './WatchParty';
 
 const allServers = getServers();
 
@@ -495,6 +496,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           </button>
         </div>
       </div>
+
+      <WatchParty
+        tmdbId={tmdbId}
+        mediaType={mediaType}
+        season={season}
+        episode={episode}
+        activeServer={activeServer}
+        onSync={(s, e, server) => { switchServer(server); }}
+      />
     </div>
   );
 }
