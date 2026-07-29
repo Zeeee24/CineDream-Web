@@ -27,8 +27,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const isTV = mediaType === 'tv';
   const validSeasons = (seasons && seasons.length > 0) 
     ? seasons.filter((s) => s.season_number > 0)
-    : (isTV ? Array.from({ length: 10 }, (_, i) => ({ season_number: i + 1, id: `s${i + 1}` })) : []); 
-    // Fallback to 10 seasons if prop is missing, though Detail.jsx should provide them.
+    : [];
 
 
   const handleClose = useCallback(() => {
