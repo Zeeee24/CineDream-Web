@@ -1655,8 +1655,7 @@ img {
   display: none;
 }
 
-.player-topbar-btn .server-toggle-label,
-.player-topbar-btn.safe-mode-toggle .server-toggle-label {
+.player-topbar-btn .server-toggle-label {
   display: inline;
 }
 
@@ -1689,8 +1688,8 @@ img {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 30;
-  max-height: 55%;
+  z-index: 9999;
+  max-height: 65dvh;
   background: #111;
   border-radius: 16px 16px 0 0;
   border-top: 1px solid #2a2a2a;
@@ -1735,6 +1734,7 @@ img {
   padding: 4px 16px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  max-height: calc(65dvh - 40px);
 }
 
 .player-server-item {
@@ -2258,8 +2258,7 @@ img {
     display: inline;
   }
 
-  .player-topbar-btn.server-toggle,
-  .player-topbar-btn.safe-mode-toggle {
+  .player-topbar-btn.server-toggle {
     width: auto;
     padding: 8px 16px;
     border-radius: 8px;
@@ -2272,7 +2271,7 @@ img {
     right: 20px;
     left: auto;
     width: 280px;
-    max-height: 60%;
+    max-height: 65dvh;
     border-radius: 12px;
     border: 1px solid #2a2a2a;
     animation: slideDown 0.2s ease;
@@ -2387,8 +2386,7 @@ img {
     display: inline;
   }
 
-  .player-topbar-btn.server-toggle,
-  .player-topbar-btn.safe-mode-toggle {
+  .player-topbar-btn.server-toggle {
     width: auto;
     padding: 8px 16px;
     border-radius: 8px;
@@ -2401,7 +2399,7 @@ img {
     right: 24px;
     left: auto;
     width: 300px;
-    max-height: 65%;
+    max-height: 65dvh;
     border-radius: 12px;
     border: 1px solid #2a2a2a;
     animation: slideDown 0.2s ease;
@@ -2650,11 +2648,11 @@ img {
   }
 
   .player-server-panel {
-    max-height: 50vh;
+    max-height: 50dvh;
   }
 
   .player-episode-panel {
-    max-height: 55vh;
+    max-height: 55dvh;
   }
 
   .player-episode-thumb {
@@ -2717,7 +2715,7 @@ img {
   }
 
   .player-server-panel {
-    max-height: 85vh;
+    max-height: 85dvh;
     top: 40px;
   }
 

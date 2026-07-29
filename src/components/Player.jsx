@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getServers, getEmbedUrl, checkAllServers, getFallbackChain } from '../services/servers';
+import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
 import { hapticLight } from '../utils/haptics';
@@ -17,7 +17,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
-  const [safeMode, setSafeMode] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const playerRef = useRef(null);
@@ -402,32 +401,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             </svg>
             <span className="server-toggle-label">Servers</span>
           </button>
-          <button
-            className={`player-topbar-btn safe-mode-toggle ${safeMode ? 'active' : ''}`}
-            onClick={() => {
-              setSafeMode(!safeMode);
-              setLoading(true);
-              setLoadError(false);
-              setFallbackCountdown(null);
-              clearInterval(fallbackTimerRef.current);
-            }}
-            aria-label={safeMode ? "Disable Ad-Block" : "Enable Ad-Block"}
-            title={safeMode ? "Safe Mode: Pop-ups & Redirects Blocked" : "Normal Mode: Allows all server features"}
-          >
-            {safeMode ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <polyline points="9 11 11 13 15 9" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            )}
-            <span className="server-toggle-label">{safeMode ? "Safe Mode" : "Ad-Block Off"}</span>
-          </button>
           <div style={{ flex: 1 }} />
         </div>
 
@@ -543,16 +516,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         )}
         
         <iframe
-          key={`${iframeKey}-${safeMode}`}
+          key={iframeKey}
           src={embedUrl}
           title={title || 'Player'}
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; media"
-          sandbox={
-            safeMode 
-              ? "allow-scripts allow-same-origin allow-forms allow-presentation" 
-              : undefined
-          }
           referrerPolicy="origin"
           className="player-iframe"
           onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
