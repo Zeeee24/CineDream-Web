@@ -1691,7 +1691,7 @@ img {
   }
 }
 
-/* === Server Panel (Mobile: bottom sheet inside player) === */
+/* === Server Panel (bottom sheet inside player) === */
 .player-server-panel {
   position: absolute;
   bottom: 0;
@@ -1705,10 +1705,21 @@ img {
   overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
+  touch-action: pan-y;
+}
+
+.player-server-panel-drag-handle {
+  display: block;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #444;
+  margin: 0 auto 8px;
 }
 
 .player-server-panel-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 12px 16px 8px;
@@ -1720,23 +1731,6 @@ img {
   position: relative;
 }
 
-.player-server-panel-header::before {
-  content: '';
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
-  background: #444;
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(100%); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 .player-server-list {
   overflow-y: auto;
   overflow-x: hidden;
@@ -1744,6 +1738,8 @@ img {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   max-height: calc(65dvh - 40px);
+  touch-action: pan-y;
+  scroll-behavior: smooth;
 }
 
 .player-server-item {
@@ -2290,7 +2286,12 @@ img {
     display: none;
   }
 
+  .player-server-panel-drag-handle {
+    display: none;
+  }
+
   .player-server-panel-header {
+    flex-direction: row;
     justify-content: flex-start;
     padding: 12px 16px 8px;
     font-size: 0.72rem;
@@ -2302,7 +2303,7 @@ img {
   }
 
   .player-server-item {
-  padding: 12px 12px;
+    padding: 12px 12px;
     min-height: 42px;
     font-size: 0.82rem;
     border-radius: 8px;
@@ -2412,7 +2413,12 @@ img {
     display: none;
   }
 
+  .player-server-panel-drag-handle {
+    display: none;
+  }
+
   .player-server-panel-header {
+    flex-direction: row;
     justify-content: flex-start;
     padding: 12px 16px 8px;
     font-size: 0.72rem;
@@ -2540,7 +2546,12 @@ img {
     display: none;
   }
 
+  .player-server-panel-drag-handle {
+    display: none;
+  }
+
   .player-server-panel-header {
+    flex-direction: row;
     justify-content: flex-start;
     padding: 16px 16px 8px;
     font-size: 0.75rem;

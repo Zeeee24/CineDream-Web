@@ -358,8 +358,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         />
 
         {showServerPanel && (
-          <div className="player-server-panel">
-            <div className="player-server-panel-header">Select Server</div>
+          <div
+            className="player-server-panel"
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
+            <div className="player-server-panel-header">
+              <span className="player-server-panel-drag-handle" />
+              Select Server
+            </div>
             <div className="player-server-list">
               {allServers.map((s, i) => (
                 <button
