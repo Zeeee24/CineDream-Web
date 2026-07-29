@@ -120,12 +120,4 @@ export function getServers() {
   return servers;
 }
 
-export function getFallbackChain(currentIndex) {
-  const chain = [];
-  for (let i = 1; i < servers.length; i++) {
-    chain.push((currentIndex + i) % servers.length);
-  }
-  return chain;
-}
-
 export default servers;

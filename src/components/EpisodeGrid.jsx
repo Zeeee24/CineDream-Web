@@ -7,7 +7,7 @@ export default function EpisodeGrid({ tvId, seasons, onPlayEpisode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const validSeasons = seasons.filter((s) => s.season_number > 0);
+  const validSeasons = (seasons || []).filter((s) => s.season_number > 0);
 
   useEffect(() => {
     let cancelled = false;

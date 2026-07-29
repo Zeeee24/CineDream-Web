@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
-import { hapticLight } from '../utils/haptics';
 
 const allServers = getServers();
 
@@ -400,7 +399,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         />
 
         {showEpisodePanel && isTV && (
-          <div className="player-episode-panel" style={{ display: 'flex', position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 35 }}>
+          <div className="player-episode-panel">
             <div className="player-episode-panel-header">
               <span>Episodes</span>
               <select
