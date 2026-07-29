@@ -1582,6 +1582,11 @@ img {
   contain: strict;
 }
 
+.player-viewport.panel-open {
+  overflow: visible !important;
+  contain: layout style;
+}
+
 /* === Topbar === */
 .player-topbar {
   position: absolute;
@@ -1702,7 +1707,7 @@ img {
   background: #111;
   border-radius: 16px 16px 0 0;
   border-top: 1px solid #2a2a2a;
-  overflow: hidden;
+  overflow: visible;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
   touch-action: pan-y;

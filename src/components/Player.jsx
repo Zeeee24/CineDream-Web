@@ -309,11 +309,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       ref={playerRef}
       onMouseMove={handlePlayerMouseMove}
     >
-      <div
-        className="player-viewport"
-        ref={viewportRef}
-        onTouchStart={handlePlayerTouchStart}
-      >
+        <div
+          className={`player-viewport ${showServerPanel ? 'panel-open' : ''}`}
+          ref={viewportRef}
+          onTouchStart={handlePlayerTouchStart}
+        >
         <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
           <button className="player-topbar-btn" onClick={onClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -358,11 +358,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         />
 
         {showServerPanel && (
-          <div
-            className="player-server-panel"
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-          >
+          <div className="player-server-panel">
             <div className="player-server-panel-header">
               <span className="player-server-panel-drag-handle" />
               Select Server
