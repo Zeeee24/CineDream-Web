@@ -625,6 +625,7 @@ img {
   transition: transform 0.3s var(--ease-netflix), z-index 0s;
   position: relative;
   will-change: transform;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .media-card:hover {
@@ -651,7 +652,7 @@ img {
   border-radius: 8px;
   overflow: hidden;
   background: var(--bg-card);
-  transition: box-shadow 0.35s ease;
+  transition: box-shadow 0.35s var(--ease-netflix), border-radius 0.35s ease;
 }
 
 .media-card.hovered .card-poster-wrapper {
@@ -663,11 +664,12 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: filter 0.35s ease;
+  transition: filter 0.35s var(--ease-netflix), transform 0.35s var(--ease-netflix);
 }
 
 .media-card:hover .card-poster {
   filter: brightness(1.1);
+  transform: scale(1.03);
 }
 
 .card-overlay {
@@ -905,10 +907,12 @@ img {
   gap: 16px;
   padding: 0 var(--content-padding);
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  overflow: hidden;
 }
 
 .content-grid .media-card {
   width: 100%;
+  min-width: 0;
 }
 
 /* ========== SEARCH PAGE ========== */
@@ -1493,7 +1497,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.3s var(--ease-netflix);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 @keyframes fadeIn {
@@ -1506,12 +1512,12 @@ img {
   width: 90vw;
   max-width: 1200px;
   aspect-ratio: 16/9;
-  animation: modalScaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalScaleIn 0.4s var(--ease-netflix);
 }
 
 @keyframes modalScaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .trailer-iframe {
@@ -1570,6 +1576,7 @@ body.player-active {
   background: #000;
   position: relative;
   z-index: 100;
+  contain: layout style;
 }
 
 .detail-content.player-active {
@@ -1582,10 +1589,13 @@ body.player-active {
   width: 100%;
   /* Mobile: fill most of the screen */
   height: 56.25vw; /* 16:9 default */
+  aspect-ratio: 16 / 9;
   min-height: 220px;
   max-height: 85vh;
   background: #000;
   overflow: hidden;
+  isolation: isolate;
+  contain: strict;
 }
 
 /* === Topbar === */
@@ -3005,7 +3015,168 @@ body.player-active {
   }
 }
 
-/* ========== RESPONSIVE: MOBILE ========== */
+/* ========== RESPONSIVE: MOBILE (< 640px) ========== */
+@media (max-width: 639px) {
+  :root {
+    --content-padding: 14px;
+    --header-height: 52px;
+  }
+
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+  }
+
+  .scroll-row-content {
+    gap: 8px;
+  }
+
+  .hero-banner {
+    height: 50vh;
+    min-height: 280px;
+  }
+
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-description {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .hero-actions {
+    gap: 8px;
+  }
+
+  .hero-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.82rem;
+  }
+
+  .media-card {
+    width: 110px;
+  }
+
+  .detail-poster-side {
+    width: 130px;
+  }
+
+  .detail-title {
+    font-size: 1.3rem;
+  }
+
+  .detail-overview {
+    font-size: 0.82rem;
+  }
+
+  .cast-card {
+    width: 80px;
+  }
+
+  .cast-photo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .trailer-preview {
+    border-radius: 8px;
+  }
+
+  .trailer-play-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* ========== RESPONSIVE: TABLET (640px - 1023px) ========== */
+@media (min-width: 640px) and (max-width: 1023px) {
+  :root {
+    --content-padding: 24px;
+    --header-height: 60px;
+  }
+
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+  }
+
+  .media-card {
+    width: 150px;
+  }
+
+  .hero-banner {
+    height: 60vh;
+    min-height: 380px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-description {
+    font-size: 0.9rem;
+  }
+
+  .detail-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .detail-poster-side {
+    width: 180px;
+  }
+
+  .detail-title {
+    font-size: 1.8rem;
+  }
+
+  .detail-backdrop-wrapper {
+    height: 55vh;
+    min-height: 320px;
+  }
+
+  .detail-content {
+    margin-top: -120px;
+  }
+
+  .actor-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .actor-photo {
+    width: 200px;
+  }
+
+  .actor-name {
+    font-size: 2rem;
+  }
+}
+
+/* ========== RESPONSIVE: DESKTOP (1024px+) ========== */
+@media (min-width: 1024px) {
+  :root {
+    --content-padding: 48px;
+  }
+
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .media-card {
+    width: 180px;
+  }
+}
+
+/* ========== RESPONSIVE: MOBILE (Legacy 768px) ========== */
 @media (max-width: 768px) {
   :root {
     --content-padding: 16px;
@@ -3023,10 +3194,15 @@ body.player-active {
     flex-direction: column;
     gap: 0;
     border-bottom: 1px solid #222;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.25s var(--ease-netflix), transform 0.25s var(--ease-netflix);
   }
 
   .header-nav.open {
     display: flex;
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .header-menu-btn {
@@ -3689,8 +3865,75 @@ body.player-active {
   }
 }
 
-/* ========== DETAIL BACK BUTTON ========== */
-/* Back button is position:absolute inside .detail-backdrop-wrapper — no fix needed */
+/* ========== UNIVERSAL BACK BUTTON ========== */
+.back-button {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  top: calc(16px + env(safe-area-inset-top));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.back-button:active {
+  transform: scale(0.9);
+}
+
+.search-page .back-button,
+.browse-page .back-button,
+.mylist-page .back-button {
+  top: calc(var(--header-height) + 8px);
+}
+
+/* ========== DETAIL BACK BUTTON (Legacy — kept for backward compat) ========== */
+.detail-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  top: calc(16px + env(safe-area-inset-top));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.detail-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.detail-back-btn:active {
+  transform: scale(0.9);
+}
+
+.search-page .detail-back-btn,
+.browse-page .detail-back-btn,
+.mylist-page .detail-back-btn {
+  top: calc(var(--header-height) + 8px);
+}
 
 /* ========== EMPTY PAGE (404) ========== */
 .empty-page {

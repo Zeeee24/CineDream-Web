@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { searchMulti, getMovieGenres, getTVGenres } from '../services/tmdb';
+import BackButton from '../components/BackButton';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import PullToRefresh from '../components/PullToRefresh';
@@ -181,11 +182,7 @@ export default function Search() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="search-page">
-      <button className="detail-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-      </button>
+      <BackButton />
       <div className="search-header">
         <div className="search-input-wrapper">
           <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

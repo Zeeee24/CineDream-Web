@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
+import BackButton from '../components/BackButton';
 import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
 import { getYouTubeThumbnail } from '../services/youtube';
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
 import Player from '../components/Player';
-import { SkeletonHero } from '../components/Skeleton';
+import { SkeletonHero, SkeletonDetailInfo } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
 import { getRating, toggleRating } from '../services/ratings';
@@ -185,11 +186,7 @@ export default function Detail() {
         />
       ) : (
         <div className="detail-backdrop-wrapper">
-        <button className="detail-back-btn" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/'); }} aria-label="Go back">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
+        <BackButton />
         {backdropUrl && (
             <img
               src={backdropUrl}

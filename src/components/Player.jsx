@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
+import { getServers, getEmbedUrl, checkAllServers, getFallbackChain } from '../services/servers';
 import { getTVSeason, img } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
 import { hapticLight } from '../utils/haptics';
@@ -21,9 +21,12 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const playerRef = useRef(null);
   const viewportRef = useRef(null);
   const hideTimerRef = useRef(null);
+  const loadTimerRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
 
   const isTV = mediaType === 'tv';
   const validSeasons = (seasons && seasons.length > 0) 
@@ -282,9 +285,48 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     if (isTV && season && episode) {
       setLoading(true);
       setLoadError(false);
+      setFallbackCountdown(null);
+      clearTimeout(fallbackTimerRef.current);
       setIframeKey((k) => k + 1);
     }
   }, [season, episode, isTV]);
+
+  // Load timeout: if loading persists >15s, treat as failure
+  useEffect(() => {
+    if (loading) {
+      clearTimeout(loadTimerRef.current);
+      loadTimerRef.current = setTimeout(() => {
+        setLoading(false);
+        setLoadError(true);
+      }, 15000);
+    } else {
+      clearTimeout(loadTimerRef.current);
+    }
+    return () => clearTimeout(loadTimerRef.current);
+  }, [loading, iframeKey]);
+
+  // Auto-fallback: when loadError is true, countdown 5s then switch server
+  useEffect(() => {
+    if (loadError) {
+      setFallbackCountdown(5);
+      fallbackTimerRef.current = setInterval(() => {
+        setFallbackCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(fallbackTimerRef.current);
+            switchServer((activeServer + 1) % allServers.length);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setFallbackCountdown(null);
+      clearInterval(fallbackTimerRef.current);
+    }
+    return () => {
+      clearInterval(fallbackTimerRef.current);
+    };
+  }, [loadError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMuteToggle() {
     hapticLight();
@@ -317,6 +359,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setIframeKey((k) => k + 1);
     setLoading(true);
     setLoadError(false);
+    setFallbackCountdown(null);
+    clearTimeout(loadTimerRef.current);
+    clearInterval(fallbackTimerRef.current);
     setShowServerPanel(false);
     showControls();
   }
@@ -404,6 +449,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               setSafeMode(!safeMode);
               setLoading(true);
               setLoadError(false);
+              setFallbackCountdown(null);
+              clearInterval(fallbackTimerRef.current);
             }}
             aria-label={safeMode ? "Disable Ad-Block" : "Enable Ad-Block"}
             title={safeMode ? "Safe Mode: Pop-ups & Redirects Blocked" : "Normal Mode: Allows all server features"}
@@ -583,7 +630,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           }
           referrerPolicy="origin"
           className="player-iframe"
-          onLoad={() => { setLoading(false); setLoadError(false); }}
+          onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
           onError={() => { setLoading(false); setLoadError(true); }}
         />
         
@@ -601,9 +648,28 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         {loadError && (
           <div className="player-error">
             <p>Failed to load from {current.name}</p>
-            <button className="btn btn-primary" onClick={() => switchServer((activeServer + 1) % allServers.length)}>
-              Try Next Server
-            </button>
+            {fallbackCountdown !== null && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                Switching to next server in {fallbackCountdown}s
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={() => {
+                clearInterval(fallbackTimerRef.current);
+                setFallbackCountdown(null);
+                switchServer((activeServer + 1) % allServers.length);
+              }}>
+                Try Next Server
+              </button>
+              {fallbackCountdown !== null && (
+                <button className="btn btn-secondary" onClick={() => {
+                  clearInterval(fallbackTimerRef.current);
+                  setFallbackCountdown(null);
+                }}>
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

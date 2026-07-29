@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 import { getWatchlist } from '../services/watchlist';
 import { getTVDetails, getMovieDetails, img } from '../services/tmdb';
+import { SkeletonGrid } from '../components/Skeleton';
 
 export default function MyList() {
   const [items, setItems] = useState([]);
@@ -38,18 +40,10 @@ export default function MyList() {
 
   return (
     <div className="mylist-page">
-      <button className="detail-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-      </button>
+      <BackButton />
       <h1 className="mylist-title">My List</h1>
       {loading ? (
-        <div className="content-grid">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="skeleton" style={{ aspectRatio: '2/3', borderRadius: 8 }} />
-          ))}
-        </div>
+        <SkeletonGrid count={8} />
       ) : items.length === 0 ? (
         <div className="empty-page">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
