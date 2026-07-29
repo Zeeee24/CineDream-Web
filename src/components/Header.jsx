@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useDevice } from '../hooks/useDevice';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
+import logo from '../assets/logo.png';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,10 +51,10 @@ export default function Header() {
     <>
       <header className={`header ${scrolled ? 'scrolled' : ''}`} onKeyDown={handleKeyDown}>
         <div className="header-inner">
-          <NavLink to="/" className="header-logo">
-            <img src="/logo.png" alt="CineDream Logo" className="logo-icon" />
-            <span className="logo-text">CineDream</span>
-          </NavLink>
+        <NavLink to="/" className="header-logo">
+          <img src={logo} alt="CineDream Logo" className="logo-icon" />
+          <span className="logo-text">CineDream</span>
+        </NavLink>
 
           <nav className={`header-nav ${menuOpen ? 'open' : ''}`}>
             {links.map((link) => (
