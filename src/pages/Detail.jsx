@@ -170,39 +170,23 @@ export default function Detail() {
         transition: isSwiping ? 'none' : 'transform 0.3s ease, opacity 0.3s ease',
       }}
     >
-      {showPlayer && (imdbId || id) ? (
-        <Player
-          imdbId={imdbId}
-          tmdbId={id}
-          mediaType={type}
-          season={isTV ? selectedSeason : undefined}
-          episode={isTV ? selectedEpisode : undefined}
-          title={title}
-          posterPath={data.poster_path}
-          backdropPath={data.backdrop_path}
-          seasons={isTV ? seasons : undefined}
-          onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
-          onClose={() => setShowPlayer(false)}
-        />
-      ) : (
-        <div className="detail-backdrop-wrapper">
+      <div className="detail-backdrop-wrapper">
         <BackButton />
         {backdropUrl && (
-            <img
-              src={backdropUrl}
-              alt=""
-              className="detail-backdrop"
-              style={{
-                transform: `translateY(${scrollY * 0.3}px) scale(${1 + scrollY * 0.0003})`,
-                opacity: Math.max(1 - scrollY / 500, 0.3),
-              }}
-            />
-          )}
-          <div className="detail-backdrop-gradient" />
-        </div>
-      )}
+          <img
+            src={backdropUrl}
+            alt=""
+            className="detail-backdrop"
+            style={{
+              transform: `translateY(${scrollY * 0.3}px) scale(${1 + scrollY * 0.0003})`,
+              opacity: Math.max(1 - scrollY / 500, 0.3),
+            }}
+          />
+        )}
+        <div className="detail-backdrop-gradient" />
+      </div>
 
-      <div className={`detail-content ${showPlayer ? 'player-active' : ''}`}>
+      <div className="detail-content">
         <div className="detail-top">
           <div className="detail-poster-side">
             {posterUrl && (
@@ -296,6 +280,24 @@ export default function Detail() {
             </div>
           </div>
         </div>
+
+        {showPlayer && (imdbId || id) && (
+          <div className="player-container">
+            <Player
+              imdbId={imdbId}
+              tmdbId={id}
+              mediaType={type}
+              season={isTV ? selectedSeason : undefined}
+              episode={isTV ? selectedEpisode : undefined}
+              title={title}
+              posterPath={data.poster_path}
+              backdropPath={data.backdrop_path}
+              seasons={isTV ? seasons : undefined}
+              onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
+              onClose={() => setShowPlayer(false)}
+            />
+          </div>
+        )}
 
         {isTV && seasons.length > 0 && (
           <EpisodeGrid

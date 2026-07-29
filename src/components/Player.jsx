@@ -163,7 +163,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    document.body.classList.add('player-active');
     checkAllServers().then((h) => {
       setHealth(h);
       if (h[allServers[0].id] === false) {
@@ -172,15 +171,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     });
 
-    if (playerRef.current) {
-      playerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
     function handleKey(e) {
       if (e.key === 'Escape') {
         if (showEpisodePanel) setShowEpisodePanel(false);
         else if (showServerPanel) setShowServerPanel(false);
-        else window.history.back();
+        else handleClose();
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -213,19 +208,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     }
 
-    window.history.pushState({ playerOpen: true }, '');
-    function handlePopState() {
-      if (showEpisodePanel) setShowEpisodePanel(false);
-      else if (showServerPanel) setShowServerPanel(false);
-      else handleClose();
-    }
-
-    window.addEventListener('popstate', handlePopState);
     document.addEventListener('keydown', handleKey);
 
     return () => {
-      document.body.classList.remove('player-active');
-      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('keydown', handleKey);
     };
   }, [handleClose, showServerPanel, showEpisodePanel]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -378,7 +363,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         onTouchStart={handlePlayerTouchStart}
       >
         <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
-          <button className="player-topbar-btn" onClick={() => window.history.back()} aria-label="Close">
+          <button className="player-topbar-btn" onClick={onClose} aria-label="Close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

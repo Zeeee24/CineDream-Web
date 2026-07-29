@@ -1542,56 +1542,31 @@ img {
   transform: scale(1.1) rotate(90deg);
 }
 
-/* ========== PLAYER (Inline, Scrollable — cineby.cc style) ========== */
-body.player-active .header {
-  display: none !important;
-}
-
-body.player-active .footer {
-  display: none !important;
-}
-
-body.player-active .scroll-progress {
-  display: none !important;
-}
-
-body.player-active .back-to-top {
-  display: none !important;
-}
-
-body.player-active .bottom-nav {
-  display: none !important;
-}
-
-body.player-active .main {
-  padding-top: 0 !important;
-}
-
-body.player-active {
-  overflow: auto !important;
-}
+/* ========== PLAYER (Inline, Document Flow) ========== */
 
 .player-section {
   width: 100%;
   background: #000;
   position: relative;
-  z-index: 100;
-  contain: layout style;
 }
 
-.detail-content.player-active {
-  margin-top: 0 !important;
-  padding-top: 24px !important;
+/* === Player Container (inline in document flow) === */
+.player-container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  contain: layout style;
 }
 
 .player-viewport {
   position: relative;
   width: 100%;
-  /* Mobile: fill most of the screen */
-  height: 56.25vw; /* 16:9 default */
+  height: auto;
   aspect-ratio: 16 / 9;
   min-height: 220px;
-  max-height: 85vh;
   background: #000;
   overflow: hidden;
   isolation: isolate;
@@ -2136,10 +2111,14 @@ body.player-active {
 
 /* ========== PLAYER RESPONSIVE: MOBILE (< 768px) ========== */
 @media (max-width: 767px) {
+  .player-container {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+  }
+
   .player-viewport {
-    height: 56.25vw;
-    max-height: 56.25vw;
-    min-height: 200px;
+    min-height: 180px;
   }
 
 
@@ -2165,9 +2144,8 @@ body.player-active {
 
 /* ========== PLAYER RESPONSIVE: TABLET / iPad (768px - 1024px) ========== */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .player-viewport {
-    height: 56.25vw;
-    max-height: 70vh;
+  .player-container {
+    max-width: 100%;
   }
 
   .player-topbar {
@@ -2273,11 +2251,6 @@ body.player-active {
 
 /* ========== PLAYER RESPONSIVE: LAPTOP (769px - 1199px) ========== */
 @media (min-width: 769px) and (max-width: 1199px) {
-  .player-viewport {
-    height: 56.25vw;
-    max-height: 75vh;
-  }
-
   .player-topbar {
     padding: 12px 20px;
     gap: 12px;
@@ -2406,11 +2379,6 @@ body.player-active {
 
 /* ========== PLAYER RESPONSIVE: DESKTOP (1200px+) ========== */
 @media (min-width: 1200px) {
-  .player-viewport {
-    height: 56.25vw;
-    max-height: 80vh;
-  }
-
   .player-topbar {
     padding: 16px 24px;
     gap: 12px;
