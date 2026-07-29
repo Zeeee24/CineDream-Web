@@ -1942,6 +1942,16 @@ img {
   color: white;
 }
 
+.player-control-server-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  line-height: 1.2;
+}
+
 /* Responsive: stack selects on small screens */
 @media (max-width: 480px) {
   .player-controls-bar {

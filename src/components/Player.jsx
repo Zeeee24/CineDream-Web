@@ -9,7 +9,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
   const [showServerPanel, setShowServerPanel] = useState(false);
-  const [showEpisodePanel, setShowEpisodePanel] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [episodesLoading, setEpisodesLoading] = useState(false);
   const [episodesSeason, setEpisodesSeason] = useState(season || 1);
@@ -52,7 +51,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     console.log('goToEpisode called with:', newSeason, newEpisode);
     if (onEpisodeChange) onEpisodeChange(newSeason, newEpisode);
     setEpisodesSeason(newSeason);
-    setShowEpisodePanel(false);
     setLoading(true);
     setLoadError(false);
     showControls();
@@ -127,7 +125,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setControlsVisible(true);
     clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      if (!showServerPanel && !showEpisodePanel) setControlsVisible(false);
+      if (!showServerPanel) setControlsVisible(false);
     }, 4000);
   }
 
@@ -166,8 +164,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     function handleKey(e) {
       if (e.key === 'Escape') {
-        if (showEpisodePanel) setShowEpisodePanel(false);
-        else if (showServerPanel) setShowServerPanel(false);
+        if (showServerPanel) setShowServerPanel(false);
         else handleClose();
         return;
       }
@@ -197,7 +194,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     return () => {
       document.removeEventListener('keydown', handleKey);
     };
-  }, [handleClose, showServerPanel, showEpisodePanel]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handleClose, showServerPanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -208,14 +205,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           setShowServerPanel(false);
         }
       }
-      if (showEpisodePanel) {
-        const panel = document.querySelector('.player-episode-panel');
-        if (panel && !panel.contains(e.target)) {
-          setShowEpisodePanel(false);
-        }
-      }
     }
-    if (showServerPanel || showEpisodePanel) {
+    if (showServerPanel) {
       setControlsVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
       clearTimeout(hideTimerRef.current);
       document.addEventListener('mousedown', handleClickOutside);
@@ -225,7 +216,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [showServerPanel, showEpisodePanel]);
+  }, [showServerPanel]);
 
   useEffect(() => {
     if (!isTV || !tmdbId) return;
@@ -366,78 +357,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           onClick={handleFullOverlayTap}
         />
 
-        {showEpisodePanel && isTV && (
-          <div className="player-episode-panel">
-            <div className="player-episode-panel-header">
-              <span>Episodes</span>
-              <select
-                className="player-episode-season-select"
-                value={episodesSeason}
-                onChange={(e) => {
-                  const newSeason = Number(e.target.value);
-                  console.log('Season changed to:', newSeason);
-                  setEpisodesSeason(newSeason);
-                  if (onEpisodeChange) onEpisodeChange(newSeason, 1);
-                }}
-              >
-                {validSeasons.map((s) => (
-                  <option key={s.id} value={s.season_number}>
-                    Season {s.season_number}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="player-episode-list">
-              {episodesLoading ? (
-                <div className="episode-loading">
-                  <div className="player-loading-spinner" />
-                </div>
-              ) : episodes.length === 0 ? (
-                <div className="episode-error">
-                  <p>No episodes found</p>
-                </div>
-              ) : (
-                episodes.map((ep) => {
-                  const isCurrent = ep.episode_number === episode && episodesSeason === season;
-                  return (
-                    <button
-                      key={ep.id}
-                      className={`player-episode-item ${isCurrent ? 'current' : ''}`}
-                      onClick={() => goToEpisode(episodesSeason, ep.episode_number)}
-                    >
-                      <div className="player-episode-thumb">
-                        {ep.still_path ? (
-                          <img
-                            src={img.backdrop(ep.still_path, 'w185')}
-                            alt={`E${ep.episode_number}`}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="player-episode-thumb-placeholder" />
-                        )}
-                        <span className="player-episode-num">{ep.episode_number}</span>
-                        {isCurrent && (
-                          <div className="player-episode-playing">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                      <div className="player-episode-info">
-                        <div className="player-episode-name">{ep.name || `Episode ${ep.episode_number}`}</div>
-                        {ep.overview && (
-                          <p className="player-episode-overview">{ep.overview}</p>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
-
         {showServerPanel && (
           <div className="player-server-panel">
             <div className="player-server-panel-header">Select Server</div>
@@ -537,13 +456,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                 value={episode || 1}
                 onChange={(e) => {
                   const newEpisode = Number(e.target.value);
-                  if (onEpisodeChange) onEpisodeChange(selectedSeason || episodesSeason, newEpisode);
+                  if (onEpisodeChange) onEpisodeChange(episodesSeason, newEpisode);
                 }}
               >
-                {episodes.length > 0 ? (
+                {episodesLoading ? (
+                  <option value={episode || 1}>Loading...</option>
+                ) : episodes.length > 0 ? (
                   episodes.map((ep) => (
                     <option key={ep.id} value={ep.episode_number}>
-                      E{ep.episode_number} - {ep.name || `Episode ${ep.episode_number}`}
+                      E{ep.episode_number} — {ep.name || `Episode ${ep.episode_number}`}
                     </option>
                   ))
                 ) : (
@@ -566,6 +487,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               <line x1="6" y1="18" x2="6.01" y2="18" />
             </svg>
             <span>Servers</span>
+            <span className="player-control-server-badge">{current?.name?.split(' — ')[1] || current?.name || 'S1'}</span>
           </button>
         </div>
       </div>
