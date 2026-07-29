@@ -3841,12 +3841,6 @@ img {
   transform: scale(0.9);
 }
 
-.search-page .back-button,
-.browse-page .back-button,
-.mylist-page .back-button {
-  top: calc(var(--header-height) + 8px);
-}
-
 /* ========== DETAIL BACK BUTTON (Legacy — kept for backward compat) ========== */
 .detail-back-btn {
   position: absolute;

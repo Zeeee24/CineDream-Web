@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '../components/BackButton';
 import { discoverMovies, discoverTV, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
@@ -123,7 +122,6 @@ export default function Browse() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="browse-page">
-      <BackButton />
       <div className="browse-header">
         <h1 className="browse-title">Browse</h1>
         <div className="filter-chips">

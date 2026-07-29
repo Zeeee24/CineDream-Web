@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { searchMulti, getMovieGenres, getTVGenres } from '../services/tmdb';
-import BackButton from '../components/BackButton';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import PullToRefresh from '../components/PullToRefresh';
@@ -182,7 +181,6 @@ export default function Search() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="search-page">
-      <BackButton />
       <div className="search-header">
         <div className="search-input-wrapper">
           <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

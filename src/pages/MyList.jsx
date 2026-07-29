@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '../components/BackButton';
 import { getWatchlist } from '../services/watchlist';
 import { getTVDetails, getMovieDetails, img } from '../services/tmdb';
 import { SkeletonGrid } from '../components/Skeleton';
@@ -40,7 +39,6 @@ export default function MyList() {
 
   return (
     <div className="mylist-page">
-      <BackButton />
       <h1 className="mylist-title">My List</h1>
       {loading ? (
         <SkeletonGrid count={8} />
