@@ -19,8 +19,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [iframeKey, setIframeKey] = useState(0);
   const [safeMode, setSafeMode] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const playerRef = useRef(null);
   const viewportRef = useRef(null);
@@ -198,14 +196,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         e.preventDefault();
         showControls();
       }
-      if (e.key === 'f' || e.key === 'F') {
-        e.preventDefault();
-        handleFullscreen();
-      }
-      if (e.key === 'm' || e.key === 'M') {
-        e.preventDefault();
-        handleMuteToggle();
-      }
     }
 
     document.addEventListener('keydown', handleKey);
@@ -312,22 +302,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       clearInterval(fallbackTimerRef.current);
     };
   }, [loadError]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  function handleMuteToggle() {
-    hapticLight();
-    setIsMuted((m) => !m);
-  }
-
-  function handleFullscreen() {
-    hapticLight();
-    if (viewportRef.current) {
-      if (!document.fullscreenElement) {
-        viewportRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
-      } else {
-        document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
-      }
-    }
-  }
 
   if (!imdbId && !tmdbId) return null;
 
@@ -454,39 +428,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             )}
             <span className="server-toggle-label">{safeMode ? "Safe Mode" : "Ad-Block Off"}</span>
           </button>
-          <button
-            className="player-topbar-btn"
-            onClick={handleMuteToggle}
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <line x1="23" y1="9" x2="17" y2="15" />
-                <line x1="17" y1="9" x2="23" y2="15" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-              </svg>
-            )}
-          </button>
-          <button
-            className="player-topbar-btn"
-            onClick={handleFullscreen}
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          >
-            {isFullscreen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-              </svg>
-            )}
-          </button>
+          <div style={{ flex: 1 }} />
         </div>
 
         <div
@@ -608,9 +550,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; media"
           sandbox={
             safeMode 
-              ? (current.id === 'multiembed' || current.id === 'vidsrc-xyz' 
-                  ? "allow-scripts allow-same-origin allow-popups" 
-                  : "allow-scripts allow-same-origin allow-forms allow-presentation allow-popups") 
+              ? "allow-scripts allow-same-origin allow-forms allow-presentation" 
               : undefined
           }
           referrerPolicy="origin"
@@ -618,17 +558,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
           onError={() => { setLoading(false); setLoadError(true); }}
         />
-        
-        {isMuted && (
-          <div className="player-mute-overlay" onClick={handleMuteToggle}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <line x1="23" y1="9" x2="17" y2="15" />
-              <line x1="17" y1="9" x2="23" y2="15" />
-            </svg>
-            <span style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>Tap to unmute</span>
-          </div>
-        )}
 
         {loadError && (
           <div className="player-error">
