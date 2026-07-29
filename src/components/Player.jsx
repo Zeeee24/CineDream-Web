@@ -16,7 +16,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [episodesSeason, setEpisodesSeason] = useState(season || 1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [iframeKey, setIframeKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const playerRef = useRef(null);
@@ -58,7 +57,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setShowEpisodePanel(false);
     setLoading(true);
     setLoadError(false);
-    setIframeKey((k) => k + 1);
     showControls();
   }
 
@@ -186,7 +184,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         }
       }
       if (showServerPanel && e.key === 'Enter') {
-        setIframeKey((k) => k + 1);
         setLoading(true);
         setLoadError(false);
         setShowServerPanel(false);
@@ -261,7 +258,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       setLoadError(false);
       setFallbackCountdown(null);
       clearTimeout(fallbackTimerRef.current);
-      setIframeKey((k) => k + 1);
     }
   }, [season, episode, isTV]);
 
@@ -277,7 +273,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       clearTimeout(loadTimerRef.current);
     }
     return () => clearTimeout(loadTimerRef.current);
-  }, [loading, iframeKey]);
+  }, [loading, activeServer]);
 
   // Auto-fallback: when loadError is true, countdown 5s then switch server
   useEffect(() => {
@@ -305,16 +301,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   if (!imdbId && !tmdbId) return null;
 
   const current = allServers[activeServer];
-  let embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode, tmdbId);
-  
-  if (current.id === 'ezvidapi') {
-    const separator = embedUrl.includes('?') ? '&' : '?';
-    embedUrl += `${separator}ref=${window.location.hostname}`;
-  }
+  const embedUrl = getEmbedUrl(current, imdbId, mediaType, season, episode, tmdbId);
 
   function switchServer(index) {
     setActiveServer(index);
-    setIframeKey((k) => k + 1);
     setLoading(true);
     setLoadError(false);
     setFallbackCountdown(null);
@@ -516,11 +506,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         )}
         
         <iframe
-          key={iframeKey}
+          key={`${activeServer}-${tmdbId}-${season}-${episode}`}
           src={embedUrl}
           title={title || 'Player'}
           allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; media"
+          allow="autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="origin"
           className="player-iframe"
           onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
