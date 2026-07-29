@@ -1582,11 +1582,6 @@ img {
   contain: strict;
 }
 
-.player-viewport.panel-open {
-  overflow: visible !important;
-  contain: layout style;
-}
-
 /* === Topbar === */
 .player-topbar {
   position: absolute;
@@ -1696,9 +1691,9 @@ img {
   }
 }
 
-/* === Server Panel (bottom sheet inside player) === */
+/* === Server Panel (bottom sheet — fixed to screen) === */
 .player-server-panel {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -1707,7 +1702,7 @@ img {
   background: #111;
   border-radius: 16px 16px 0 0;
   border-top: 1px solid #2a2a2a;
-  overflow: visible;
+  overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   padding-bottom: env(safe-area-inset-bottom);
   touch-action: pan-y;
@@ -2270,6 +2265,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     bottom: auto;
     top: 56px;
     right: 16px;
@@ -2397,6 +2393,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     bottom: auto;
     top: 56px;
     right: 20px;
@@ -2530,6 +2527,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     bottom: auto;
     top: 60px;
     right: 24px;
@@ -2634,6 +2632,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     right: 32px;
     width: 320px;
   }
@@ -2789,6 +2788,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     max-height: 50dvh;
   }
 
@@ -2856,6 +2856,7 @@ img {
   }
 
   .player-server-panel {
+    position: absolute;
     max-height: 85dvh;
     top: 40px;
   }

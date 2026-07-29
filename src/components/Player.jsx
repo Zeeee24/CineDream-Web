@@ -134,6 +134,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }
 
   function handlePlayerTouchStart() {
+    if (showServerPanel) return;
     if (controlsVisible) {
       setControlsVisible(false);
       clearTimeout(hideTimerRef.current);
@@ -310,7 +311,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       onMouseMove={handlePlayerMouseMove}
     >
         <div
-          className={`player-viewport ${showServerPanel ? 'panel-open' : ''}`}
+          className="player-viewport"
           ref={viewportRef}
           onTouchStart={handlePlayerTouchStart}
         >
