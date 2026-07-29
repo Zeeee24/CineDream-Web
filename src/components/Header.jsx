@@ -30,7 +30,7 @@ export default function Header() {
     <header className={`header ${scrolled ? 'scrolled' : ''}`} onKeyDown={handleKeyDown}>
       <div className="header-inner">
         <NavLink to="/" className="header-logo">
-          <span className="logo-icon">C</span>
+          <img src="/logo.png" alt="CineDream Logo" className="logo-icon" />
           <span className="logo-text">CineDream</span>
         </NavLink>
 
