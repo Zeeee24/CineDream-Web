@@ -285,19 +285,19 @@ export default function Detail() {
               imdbId={imdbId}
               tmdbId={id}
               mediaType={type}
-              season={isTV ? selectedSeason : undefined}
-              episode={isTV ? selectedEpisode : undefined}
+              season={!isMovie ? selectedSeason : undefined}
+              episode={!isMovie ? selectedEpisode : undefined}
               title={title}
               posterPath={data.poster_path}
               backdropPath={data.backdrop_path}
-              seasons={isTV ? seasons : undefined}
-              onEpisodeChange={isTV ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
+              seasons={!isMovie ? seasons : undefined}
+              onEpisodeChange={!isMovie ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
               onClose={() => setShowPlayer(false)}
             />
           </div>
         )}
 
-        {isTV && seasons.length > 0 && (
+        {!isMovie && seasons.length > 0 && (
           <EpisodeGrid
             tvId={id}
             seasons={seasons}
