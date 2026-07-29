@@ -1858,6 +1858,112 @@ img {
   background: #000;
 }
 
+/* === Under-Player Controls Bar === */
+.player-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #111;
+  border-top: 1px solid #222;
+}
+
+.player-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.player-control-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px 30px 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.player-control-select:focus {
+  outline: none;
+  border-color: var(--accent, #e50914);
+}
+
+.player-control-select option {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.player-control-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.player-control-btn:hover,
+.player-control-btn:active {
+  background: #252525;
+  border-color: #444;
+}
+
+.player-control-btn.active {
+  background: var(--accent, #e50914);
+  border-color: var(--accent, #e50914);
+  color: white;
+}
+
+/* Responsive: stack selects on small screens */
+@media (max-width: 480px) {
+  .player-controls-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .player-controls-left {
+    width: 100%;
+  }
+  .player-control-select {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.78rem;
+    padding: 7px 28px 7px 10px;
+  }
+  .player-control-btn {
+    font-size: 0.78rem;
+    padding: 7px 12px;
+  }
+}
+
 /* Full-viewport tap overlay — catches taps when controls are hidden */
 .player-full-overlay {
   position: absolute;

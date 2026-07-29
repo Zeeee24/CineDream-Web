@@ -228,7 +228,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [showServerPanel, showEpisodePanel]);
 
   useEffect(() => {
-    if (!showEpisodePanel || !isTV || !tmdbId) return;
+    if (!isTV || !tmdbId) return;
     let cancelled = false;
     async function loadEpisodes() {
       setEpisodesLoading(true);
@@ -244,7 +244,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     }
     loadEpisodes();
     return () => { cancelled = true; };
-  }, [showEpisodePanel, tmdbId, episodesSeason]);
+  }, [tmdbId, episodesSeason, isTV]);
 
   useEffect(() => {
     if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
@@ -357,38 +357,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               </svg>
             </button>
           )}
-          {isTV && (
-            <button
-              className={`player-topbar-btn ${showEpisodePanel ? 'active' : ''}`}
-              onClick={() => { 
-                console.log('Episode button clicked, current state:', showEpisodePanel);
-                setShowEpisodePanel(!showEpisodePanel); 
-                setShowServerPanel(false); 
-              }}
-              aria-label="Episodes"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="3" width="20" height="18" rx="2" />
-                <line x1="2" y1="9" x2="22" y2="9" />
-                <line x1="2" y1="15" x2="22" y2="15" />
-              </svg>
-              <span className="episode-toggle-label">S{season} E{episode}</span>
-            </button>
-          )}
-          <button
-            className={`player-topbar-btn server-toggle ${showServerPanel ? 'active' : ''}`}
-            onClick={() => { setShowServerPanel(!showServerPanel); setShowEpisodePanel(false); }}
-            aria-label="Servers"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-              <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-              <line x1="6" y1="6" x2="6.01" y2="6" />
-              <line x1="6" y1="18" x2="6.01" y2="18" />
-            </svg>
-            <span className="server-toggle-label">Servers</span>
-          </button>
           <div style={{ flex: 1 }} />
         </div>
 
@@ -542,6 +510,64 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             </div>
           </div>
         )}
+      </div>
+
+      {/* Under-player control bar */}
+      <div className="player-controls-bar">
+        <div className="player-controls-left">
+          {isTV && validSeasons.length > 0 && (
+            <>
+              <select
+                className="player-control-select"
+                value={episodesSeason}
+                onChange={(e) => {
+                  const newSeason = Number(e.target.value);
+                  setEpisodesSeason(newSeason);
+                  if (onEpisodeChange) onEpisodeChange(newSeason, 1);
+                }}
+              >
+                {validSeasons.map((s) => (
+                  <option key={s.id} value={s.season_number}>
+                    Season {s.season_number}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="player-control-select"
+                value={episode || 1}
+                onChange={(e) => {
+                  const newEpisode = Number(e.target.value);
+                  if (onEpisodeChange) onEpisodeChange(selectedSeason || episodesSeason, newEpisode);
+                }}
+              >
+                {episodes.length > 0 ? (
+                  episodes.map((ep) => (
+                    <option key={ep.id} value={ep.episode_number}>
+                      E{ep.episode_number} - {ep.name || `Episode ${ep.episode_number}`}
+                    </option>
+                  ))
+                ) : (
+                  <option value={1}>Episode 1</option>
+                )}
+              </select>
+            </>
+          )}
+        </div>
+        <div className="player-controls-right">
+          <button
+            className="player-control-btn server-toggle"
+            onClick={() => { setShowServerPanel(!showServerPanel); }}
+            aria-label="Servers"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+              <line x1="6" y1="6" x2="6.01" y2="6" />
+              <line x1="6" y1="18" x2="6.01" y2="18" />
+            </svg>
+            <span>Servers</span>
+          </button>
+        </div>
       </div>
     </div>
   );
