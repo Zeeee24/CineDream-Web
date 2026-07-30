@@ -2057,46 +2057,6 @@ img {
   gap: 12px;
 }
 
-/* === Action Buttons === */
-.player-action-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.player-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.player-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: var(--text-primary);
-}
-
-.player-action-btn:active {
-  transform: scale(0.97);
-}
-
-.player-action-btn.active {
-  background: rgba(229, 9, 20, 0.12);
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
 /* === Control Select (reused in season/episode) === */
 .player-control-select {
   appearance: none;
@@ -2181,50 +2141,6 @@ img {
   padding: 8px;
 }
 
-/* === Cineby.at Style: Actions Row === */
-.player-actions-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.player-action-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 20px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  flex: 1;
-  min-width: 0;
-}
-
-.player-action-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: var(--text-primary);
-}
-
-.player-action-pill:active {
-  transform: scale(0.97);
-}
-
-.player-action-pill.active {
-  background: rgba(229, 9, 20, 0.12);
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
 /* ========== PLAYER RESPONSIVE: MOBILE (< 768px) ========== */
 @media (max-width: 767px) {
   .player-viewport {
@@ -2248,26 +2164,6 @@ img {
     gap: 8px;
   }
 
-  .player-actions-row {
-    gap: 6px;
-  }
-
-  .player-action-pill {
-    padding: 12px 14px;
-    font-size: 0.78rem;
-    gap: 6px;
-    flex: 1 1 calc(50% - 3px);
-    min-width: 0;
-  }
-
-  .player-action-buttons {
-    gap: 8px;
-  }
-
-  .player-action-btn {
-    padding: 8px 14px;
-    font-size: 0.78rem;
-  }
 }
 
 /* ========== PLAYER RESPONSIVE: TABLET / iPad (768px - 1024px) ========== */
@@ -2277,40 +2173,18 @@ img {
     from { opacity: 0; transform: translateY(-8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
-  .player-action-pill {
-    padding: 14px 18px;
-    font-size: 0.85rem;
-    flex: 1 1 auto;
-  }
 }
 
 /* ========== PLAYER RESPONSIVE: LAPTOP (769px - 1199px) ========== */
 @media (min-width: 769px) and (max-width: 1199px) {
-
-  .player-action-pill {
-    padding: 14px 18px;
-    font-size: 0.85rem;
-    flex: 1 1 auto;
-  }
 }
 
 /* ========== PLAYER RESPONSIVE: DESKTOP (1200px+) ========== */
 @media (min-width: 1200px) {
-
-  .player-action-pill {
-    padding: 16px 24px;
-    font-size: 0.88rem;
-  }
 }
 
 /* ========== PLAYER RESPONSIVE: LARGE SCREENS (1440px+) ========== */
 @media (min-width: 1440px) {
-
-  .player-action-pill {
-    padding: 16px 24px;
-    font-size: 0.88rem;
-  }
 }
 
 /* ========== PLAYER RESPONSIVE: SMALL PHONES ========== */
@@ -2318,12 +2192,6 @@ img {
   .player-viewport {
     min-height: 160px;
     border-radius: 6px;
-  }
-
-  .player-action-pill {
-    padding: 10px 10px;
-    font-size: 0.72rem;
-    flex: 1 1 calc(50% - 2px);
   }
 }
 

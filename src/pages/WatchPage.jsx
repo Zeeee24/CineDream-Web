@@ -3,7 +3,6 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getMovieDetails, getTVDetails, getTVSeason } from '../services/tmdb';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { addToHistory, updateEpisodeProgress, getResumePosition } from '../services/watchHistory';
-import WatchParty from '../components/WatchParty';
 
 const allServers = getServers();
 
@@ -27,8 +26,6 @@ export default function WatchPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
-  const [showWatchParty, setShowWatchParty] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [resumePosition, setResumePosition] = useState(null);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const [watchTime, setWatchTime] = useState(0);
@@ -36,7 +33,6 @@ export default function WatchPage() {
   const loadTimerRef = useRef(null);
   const fallbackTimerRef = useRef(null);
   const progressIntervalRef = useRef(null);
-
   const season = isMovie ? null : episodesSeason;
   const episode = isMovie ? null : currentEpisode;
 
@@ -47,15 +43,6 @@ export default function WatchPage() {
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!playerRef.current) return;
-    if (!document.fullscreenElement) {
-      playerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-    }
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,10 +185,6 @@ export default function WatchPage() {
         setLoading(true);
         setLoadError(false);
       }
-      if (e.key === 'f' || e.key === 'F') {
-        e.preventDefault();
-        toggleFullscreen();
-      }
       if (e.key >= '1' && e.key <= '8') {
         const idx = parseInt(e.key) - 1;
         if (idx < allServers.length) {
@@ -213,7 +196,7 @@ export default function WatchPage() {
     }
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [handleBack, toggleFullscreen]);
+  }, [handleBack]);
 
   function switchServer(index) {
     setActiveServer(index);
@@ -299,22 +282,23 @@ export default function WatchPage() {
           src={embedUrl}
           title={title}
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
           referrerPolicy="origin"
           className="player-iframe"
+          style={{ pointerEvents: 'auto' }}
           onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
           onError={() => { setLoading(false); setLoadError(true); }}
         />
 
         {loading && (
-          <div className="player-loading">
+          <div className="player-loading" style={{ pointerEvents: 'auto' }}>
             <div className="player-loading-spinner" />
             <span>Loading from {current.name}...</span>
           </div>
         )}
 
         {loadError && (
-          <div className="player-error">
+          <div className="player-error" style={{ pointerEvents: 'auto' }}>
             <p>Failed to load from {current.name}</p>
             {fallbackCountdown !== null && (
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
@@ -392,56 +376,6 @@ export default function WatchPage() {
             </div>
           )}
         </div>
-
-        <div className="player-actions-row">
-          <button
-            className="player-action-pill"
-            onClick={() => {
-              const url = window.location.href;
-              if (navigator.share) {
-                navigator.share({ title, url }).catch(() => {});
-              } else {
-                navigator.clipboard.writeText(url).catch(() => {});
-              }
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
-            Share
-          </button>
-          <button
-            className={`player-action-pill ${isFullscreen ? 'active' : ''}`}
-            onClick={toggleFullscreen}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
-            </svg>
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </button>
-          <button
-            className={`player-action-pill ${showWatchParty ? 'active' : ''}`}
-            onClick={() => setShowWatchParty(!showWatchParty)}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
-            Watch Party
-          </button>
-        </div>
-
-        {showWatchParty && (
-          <WatchParty
-            tmdbId={id}
-            mediaType={type}
-            season={season}
-            episode={episode}
-            activeServer={activeServer}
-            onSync={(s, e, server) => { switchServer(server); }}
-          />
-        )}
       </div>
     </div>
   );
