@@ -125,8 +125,9 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
       setMembers(data.members || {});
       setHostName(data.hostName || '');
 
-      if (user.uid !== data.host && data.activeServer !== undefined && onServerChange) {
+      if (user.uid !== data.host && data.activeServer !== undefined && onServerChange && joinedRef.current) {
         onServerChange(data.activeServer);
+        joinedRef.current = false;
       }
 
       if (data.syncEvent && onSync) {
@@ -172,6 +173,12 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
     }
     return () => clearInterval(syncIntervalRef.current);
   }, [isHost, roomCode]);
+
+  useEffect(() => {
+    if (isHost && roomCode && activeServer !== undefined) {
+      update(ref(db, `watchParties/${roomCode}`), { activeServer });
+    }
+  }, [isHost, roomCode, activeServer]);
 
   async function handleSync() {
     if (!roomCode || !isHost) return;
