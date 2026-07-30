@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { img } from '../services/tmdb';
+import { img, getMovieImages, getTVImages } from '../services/tmdb';
 import { formatRuntime, getYear, truncate } from '../utils/helpers';
 import { useDevice } from '../hooks/useDevice';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
@@ -10,19 +10,25 @@ import { hapticLight } from '../utils/haptics';
 export default function HeroBanner({ items = [], interval = 8000 }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
+  const [prevIndex, setPrevIndex] = useState(-1);
+  const [logos, setLogos] = useState({});
+  const [imgLoaded, setImgLoaded] = useState(false);
   const [, setListVersion] = useState(0);
   const [, setRatingVersion] = useState(0);
   const [nowTimestamp] = useState(() => Date.now());
   const navigate = useNavigate();
   const { isTV } = useDevice();
+  const logoCacheRef = useRef({});
 
   const nextSlide = useCallback(() => {
+    setPrevIndex(current);
     setFading(true);
+    setImgLoaded(false);
     setTimeout(() => {
       setCurrent((prev) => (prev + 1) % items.length);
       setFading(false);
     }, 500);
-  }, [items.length]);
+  }, [current, items.length]);
 
   useEffect(() => {
     if (items.length <= 1) return;
@@ -30,12 +36,30 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
     return () => clearInterval(timer);
   }, [nextSlide, items.length, interval]);
 
+  useEffect(() => {
+    if (!items.length) return;
+    items.forEach((item) => {
+      if (logoCacheRef.current[item.id]) return;
+      const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+      const fetchImages = mediaType === 'tv' ? getTVImages : getMovieImages;
+      fetchImages(item.id).then((data) => {
+        const logos = data.logos || [];
+        const bestLogo = logos.find((l) => l.iso_639_1 === 'en') || logos[0] || null;
+        if (bestLogo) {
+          logoCacheRef.current[item.id] = img.logo(bestLogo.file_path, 'w500');
+          setLogos((prev) => ({ ...prev, [item.id]: logoCacheRef.current[item.id] }));
+        }
+      }).catch(() => {});
+    });
+  }, [items]);
+
   if (!items.length) return <div className="hero-banner skeleton skeleton-hero" />;
 
   const item = items[current];
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const title = item.title || item.name || '';
   const backdropUrl = img.backdrop(item.backdrop_path, 'original');
+  const prevBackdropUrl = prevIndex >= 0 && items[prevIndex] ? img.backdrop(items[prevIndex].backdrop_path, 'original') : null;
   const year = getYear(item.release_date || item.first_air_date);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
   const runtime = item.runtime || null;
@@ -45,6 +69,7 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
     ? new Date(item.first_air_date) > new Date(nowTimestamp - 90 * 86400000)
     : false;
   const isTrending = item.vote_count > 1000 && item.vote_average >= 7.5;
+  const logoUrl = logos[item.id] || null;
 
   function handlePlay() {
     navigate(`/${mediaType}/${item.id}?play=true`);
@@ -90,14 +115,24 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
       role="banner"
     >
       <div className="hero-backdrop">
+        {prevBackdropUrl && fading && (
+          <img
+            src={prevBackdropUrl}
+            alt=""
+            className="hero-backdrop-img"
+            style={{ opacity: 0, transition: 'opacity 0.5s ease' }}
+          />
+        )}
         {backdropUrl && (
           <img
             src={backdropUrl}
             alt=""
-            className="hero-backdrop-img"
+            className={`hero-backdrop-img hero-backdrop-zoom ${imgLoaded ? 'loaded' : ''}`}
+            onLoad={() => setImgLoaded(true)}
           />
         )}
         <div className="hero-gradient" />
+        <div className="hero-gradient-left" />
       </div>
       <div className="hero-content">
         <div className="hero-badges">
@@ -105,7 +140,11 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
           {isTrending && <span className="hero-badge hero-badge-trending">Trending</span>}
           {mediaType === 'tv' && <span className="hero-badge hero-badge-type">Series</span>}
         </div>
-        <h1 className="hero-title">{title}</h1>
+        {logoUrl ? (
+          <img src={logoUrl} alt={title} className="hero-logo-img" />
+        ) : (
+          <h1 className="hero-title hero-title-gradient">{title}</h1>
+        )}
         <div className="hero-meta">
           {year && <span>{year}</span>}
           {rating && (
@@ -120,7 +159,7 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
         </div>
         <p className="hero-description">{truncate(item.overview, isTV ? 300 : 180)}</p>
         <div className="hero-actions">
-          <button className="btn btn-primary" onClick={handlePlay}>
+          <button className="btn btn-primary btn-glow-play" onClick={handlePlay}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -173,7 +212,9 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
             key={i}
             className={`hero-dot ${i === current ? 'active' : ''}`}
             onClick={() => {
+              setPrevIndex(current);
               setFading(true);
+              setImgLoaded(false);
               setTimeout(() => {
                 setCurrent(i);
                 setFading(false);

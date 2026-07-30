@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
+import { getMovieDetails, getTVDetails, getWatchProviders, getTVWatchProviders, img } from '../services/tmdb';
 import BackButton from '../components/BackButton';
 import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
 import { getYouTubeThumbnail } from '../services/youtube';
@@ -32,6 +32,8 @@ export default function Detail() {
   const [scrollY, setScrollY] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [providers, setProviders] = useState(null);
+  const [activeVideo, setActiveVideo] = useState(null);
   const touchStartRef = useRef({ x: 0, y: 0 });
 
   const isMovie = type === 'movie';
@@ -100,6 +102,12 @@ export default function Detail() {
     window.scrollTo(0, 0);
   }, [type, id, isMovie, searchParams]);
 
+  useEffect(() => {
+    if (!data) return;
+    const fetchProviders = isMovie ? getWatchProviders : getTVWatchProviders;
+    fetchProviders(id).then(setProviders).catch(() => {});
+  }, [id, isMovie, data]);
+
   if (loading || !data) {
     return (
       <div className="detail-page">
@@ -126,6 +134,14 @@ export default function Detail() {
 
   const infoLine = formatDetailInfo(year, rating, runtime, cert);
   const seasons = data.seasons || [];
+  const crew = data.credits?.crew?.slice(0, 10) || [];
+  const productionCompanies = data.production_companies || [];
+  const usProviders = providers?.US || {};
+  const flatrateProviders = usProviders.flatrate || [];
+  const budget = data.budget || 0;
+  const revenue = data.revenue || 0;
+  const collection = data.belongs_to_collection || null;
+  const youtubeVideos = videos.filter((v) => v.site === 'YouTube');
 
   function handlePlayNow() {
     setShowPlayer(true);
@@ -279,6 +295,48 @@ export default function Detail() {
           </div>
         </div>
 
+        {flatrateProviders.length > 0 && (
+          <section className="detail-section detail-providers-section">
+            <h2 className="section-title">Watch On</h2>
+            <div className="providers-row">
+              {flatrateProviders.map((p) => (
+                <div key={p.provider_id} className="provider-badge" title={p.provider_name}>
+                  {p.logo_path ? (
+                    <img src={img.logo(p.logo_path, 'w92')} alt={p.provider_name} className="provider-logo" />
+                  ) : (
+                    <span className="provider-name-text">{p.provider_name}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(budget > 0 || revenue > 0 || collection) && (
+          <section className="detail-section detail-stats-section">
+            <div className="detail-stats-row">
+              {budget > 0 && (
+                <div className="detail-stat">
+                  <span className="detail-stat-label">Budget</span>
+                  <span className="detail-stat-value">${(budget / 1000000).toFixed(0)}M</span>
+                </div>
+              )}
+              {revenue > 0 && (
+                <div className="detail-stat">
+                  <span className="detail-stat-label">Revenue</span>
+                  <span className="detail-stat-value">${(revenue / 1000000).toFixed(0)}M</span>
+                </div>
+              )}
+              {collection && (
+                <div className="detail-stat">
+                  <span className="detail-stat-label">Collection</span>
+                  <span className="detail-stat-value">{collection.name}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {showPlayer && (imdbId || id) && (
           <Player
             imdbId={imdbId}
@@ -305,6 +363,47 @@ export default function Detail() {
               setShowPlayer(true);
             }}
           />
+        )}
+
+        {youtubeVideos.length > 0 && (
+          <section className="detail-section detail-videos-section">
+            <h2 className="section-title">Videos & Trailers</h2>
+            <div className="videos-grid">
+              {youtubeVideos.slice(0, 8).map((v) => (
+                <div key={v.id} className="video-card" onClick={() => setActiveVideo(v.key)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveVideo(v.key); } }}>
+                  <div className="video-card-thumb">
+                    <img src={getYouTubeThumbnail(v.key)} alt={v.name} loading="lazy" />
+                    <div className="video-card-play">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="video-card-info">
+                    <span className="video-card-type">{v.type}</span>
+                    <span className="video-card-name">{v.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {productionCompanies.length > 0 && (
+          <section className="detail-section detail-production-section">
+            <h2 className="section-title">Production</h2>
+            <div className="production-row">
+              {productionCompanies.slice(0, 6).map((c) => (
+                <div key={c.id} className="production-badge">
+                  {c.logo_path ? (
+                    <img src={img.logo(c.logo_path, 'w154')} alt={c.name} className="production-logo" />
+                  ) : (
+                    <span className="production-name-text">{c.name}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {trailerKey && (
@@ -350,6 +449,25 @@ export default function Detail() {
           </section>
         )}
 
+        {crew.length > 0 && (
+          <section className="detail-cast-section">
+            <h2 className="section-title">Crew</h2>
+            <div className="cast-row">
+              {crew.map((person) => (
+                <div key={person.id} className="cast-card" onClick={() => navigate(`/person/${person.id}`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/person/${person.id}`); } }}>
+                  {person.profile_path ? (
+                    <img src={img.profile(person.profile_path)} alt={person.name} className="cast-photo" loading="lazy" />
+                  ) : (
+                    <div className="cast-photo cast-placeholder" />
+                  )}
+                  <div className="cast-name">{person.name}</div>
+                  <div className="cast-character">{person.job || person.department}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {similar.length > 0 && (
           <ScrollRow title="More Like This" items={similar} />
         )}
@@ -373,6 +491,10 @@ export default function Detail() {
 
       {showTrailer && trailerKey && (
         <TrailerModal videoKey={trailerKey} onClose={() => setShowTrailer(false)} />
+      )}
+
+      {activeVideo && (
+        <TrailerModal videoKey={activeVideo} onClose={() => setActiveVideo(null)} />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
 import { getTVSeason } from '../services/tmdb';
-import { addToHistory } from '../services/watchHistory';
+import { addToHistory, updateEpisodeProgress, getResumePosition } from '../services/watchHistory';
 import WatchParty from './WatchParty';
 
 const allServers = getServers();
@@ -19,11 +19,15 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const [showWatchParty, setShowWatchParty] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [resumePosition, setResumePosition] = useState(null);
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [watchTime, setWatchTime] = useState(0);
   const playerRef = useRef(null);
   const viewportRef = useRef(null);
   const hideTimerRef = useRef(null);
   const loadTimerRef = useRef(null);
   const fallbackTimerRef = useRef(null);
+  const progressIntervalRef = useRef(null);
 
   const isTV = mediaType === 'tv';
   const validSeasons = (seasons && seasons.length > 0)
@@ -35,9 +39,30 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     return () => { document.body.style.overflow = ''; };
   }, []);
 
+  useEffect(() => {
+    const pos = getResumePosition(Number(tmdbId), season, episode);
+    if (pos && pos.progressSeconds > 30) {
+      setResumePosition(pos);
+      setShowResumeBanner(true);
+    }
+  }, [tmdbId, season, episode]);
+
+  useEffect(() => {
+    progressIntervalRef.current = setInterval(() => {
+      setWatchTime((prev) => {
+        const newTime = prev + 10;
+        updateEpisodeProgress(Number(tmdbId), season || null, episode || null, newTime, 3600);
+        return newTime;
+      });
+    }, 10000);
+    return () => clearInterval(progressIntervalRef.current);
+  }, [tmdbId, season, episode]);
+
   const handleClose = useCallback(() => {
     document.body.style.overflow = '';
+    clearInterval(progressIntervalRef.current);
     try {
+      updateEpisodeProgress(Number(tmdbId), season || null, episode || null, watchTime, 3600);
       addToHistory({
         tmdbId: Number(tmdbId),
         title: title || 'Untitled',
@@ -46,14 +71,14 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         contentType: isTV ? 'TV' : 'Movie',
         season: season || null,
         episode: episode || null,
-        progressSeconds: 1,
+        progressSeconds: watchTime,
         durationSeconds: 3600,
       });
     } catch (e) {
       console.warn('Failed to save history:', e);
     }
     onClose();
-  }, [tmdbId, title, posterPath, backdropPath, isTV, season, episode, onClose]);
+  }, [tmdbId, title, posterPath, backdropPath, isTV, season, episode, onClose, watchTime]);
 
   function goToEpisode(newSeason, newEpisode) {
     if (onEpisodeChange) onEpisodeChange(newSeason, newEpisode);
@@ -184,6 +209,16 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           });
         }
       }
+      if (e.key === 'ArrowLeft') {
+        showControls();
+        e.preventDefault();
+        switchServer((activeServer - 1 + allServers.length) % allServers.length);
+      }
+      if (e.key === 'ArrowRight') {
+        showControls();
+        e.preventDefault();
+        switchServer((activeServer + 1) % allServers.length);
+      }
       if (showServerPanel && e.key === 'Enter') {
         setLoading(true);
         setLoadError(false);
@@ -192,6 +227,17 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         showControls();
+      }
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      if (e.key >= '1' && e.key <= '8') {
+        const idx = parseInt(e.key) - 1;
+        if (idx < allServers.length) {
+          showControls();
+          switchServer(idx);
+        }
       }
     }
 
@@ -403,6 +449,31 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             <div className="player-loading">
               <div className="player-loading-spinner" />
               <span>Loading from {current.name}...</span>
+            </div>
+          )}
+
+          {showResumeBanner && resumePosition && (
+            <div className="player-resume-banner glass-heavy">
+              <div className="player-resume-info">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Resume from {Math.floor(resumePosition.progressSeconds / 60)}:{String(resumePosition.progressSeconds % 60).padStart(2, '0')}</span>
+              </div>
+              <div className="player-resume-actions">
+                <button className="btn btn-primary" onClick={() => {
+                  setShowResumeBanner(false);
+                  showControls();
+                }}>
+                  Resume
+                </button>
+                <button className="btn btn-secondary" onClick={() => {
+                  setShowResumeBanner(false);
+                  showControls();
+                }}>
+                  Start Over
+                </button>
+              </div>
             </div>
           )}
 

@@ -13,6 +13,7 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const { isTV } = useDevice();
   const navigate = useNavigate();
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const title = item.title || item.name || 'Untitled';
@@ -106,9 +107,10 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
           <img
             src={posterUrl}
             alt={title}
-            className="card-poster"
+            className={`card-poster img-fade-in ${imgLoaded ? 'loaded' : ''}`}
             loading="lazy"
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
           />
         ) : (
           <div className="card-poster skeleton" />

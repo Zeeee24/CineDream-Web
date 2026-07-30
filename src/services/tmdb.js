@@ -139,3 +139,46 @@ export async function getPersonDetails(personId) {
 export async function getPersonCredits(personId) {
   return fetchWithCache(`/person/${personId}/combined_credits`);
 }
+
+export async function getMovieImages(movieId) {
+  return fetchWithCache(`/movie/${movieId}/images`, { include_image_language: 'en,null' });
+}
+
+export async function getTVImages(tvId) {
+  return fetchWithCache(`/tv/${tvId}/images`, { include_image_language: 'en,null' });
+}
+
+export async function discoverByGenre(genreIds, params = {}) {
+  return fetchWithCache('/discover/movie', {
+    with_genres: Array.isArray(genreIds) ? genreIds.join(',') : genreIds,
+    sort_by: 'vote_average.desc',
+    'vote_count.gte': 200,
+    ...params,
+  });
+}
+
+export async function discoverByRuntime(params = {}) {
+  return fetchWithCache('/discover/movie', {
+    sort_by: 'popularity.desc',
+    'vote_count.gte': 100,
+    ...params,
+  });
+}
+
+export async function discoverByKeywords(keywordIds, params = {}) {
+  return fetchWithCache('/discover/movie', {
+    with_keywords: Array.isArray(keywordIds) ? keywordIds.join(',') : keywordIds,
+    sort_by: 'vote_average.desc',
+    'vote_count.gte': 200,
+    ...params,
+  });
+}
+
+export async function getDiscoverByProvider(providerIds) {
+  return fetchWithCache('/discover/movie', {
+    with_watch_providers: Array.isArray(providerIds) ? providerIds.join('|') : providerIds,
+    watch_region: 'US',
+    sort_by: 'popularity.desc',
+    'vote_count.gte': 100,
+  });
+}
