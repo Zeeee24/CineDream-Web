@@ -37,6 +37,7 @@ export default function Header() {
     { to: '/', label: 'Home' },
     { to: '/search', label: 'Search' },
     { to: '/browse', label: 'Browse' },
+    { to: '/watch-parties', label: 'Watch Party' },
   ];
 
   function handleKeyDown(e) {

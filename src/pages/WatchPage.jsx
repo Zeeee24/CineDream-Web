@@ -35,6 +35,7 @@ export default function WatchPage() {
   const loadTimerRef = useRef(null);
   const fallbackTimerRef = useRef(null);
   const progressIntervalRef = useRef(null);
+  const syncTimerRef = useRef(null);
   const season = isMovie ? null : episodesSeason;
   const episode = isMovie ? null : currentEpisode;
 
@@ -101,6 +102,8 @@ export default function WatchPage() {
     }, 10000);
     return () => clearInterval(progressIntervalRef.current);
   }, [id, season, episode]);
+
+  useEffect(() => () => clearTimeout(syncTimerRef.current), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -268,7 +271,7 @@ export default function WatchPage() {
               </svg>
               <span>
                 {partyTimestamp
-                  ? `Join party at ${Math.floor(partyTimestamp / 60)}:${String(partyTimestamp % 60).padStart(2, '0')}`
+                  ? `Synced at ${Math.floor(partyTimestamp / 60)}:${String(partyTimestamp % 60).padStart(2, '0')}`
                   : `Resume from ${Math.floor(resumePosition.progressSeconds / 60)}:${String(resumePosition.progressSeconds % 60).padStart(2, '0')}`
                 }
               </span>
@@ -395,10 +398,15 @@ export default function WatchPage() {
             onSync={(s, e, server) => { switchServer(server); }}
             onServerChange={(server) => { switchServer(server); }}
             onTimestampSync={(ts) => {
+              clearTimeout(syncTimerRef.current);
               const elapsed = Math.floor((Date.now() - ts) / 1000);
               if (elapsed > 30) {
                 setPartyTimestamp(elapsed);
                 setShowResumeBanner(true);
+                syncTimerRef.current = setTimeout(() => {
+                  setPartyTimestamp(null);
+                  setShowResumeBanner(false);
+                }, 1500);
               }
             }}
           />

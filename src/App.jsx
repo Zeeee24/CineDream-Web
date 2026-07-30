@@ -10,6 +10,7 @@ import Browse from './pages/Browse';
 import Detail from './pages/Detail';
 import ActorPage from './pages/ActorPage';
 import MyList from './pages/MyList';
+import WatchParties from './pages/WatchParties';
 import WatchPage from './pages/WatchPage';
 
 function AnimatedRoutes() {
@@ -25,6 +26,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/browse" element={<Browse />} />
+        <Route path="/watch-parties" element={<WatchParties />} />
         <Route path="/mylist" element={<MyList />} />
         <Route path="/:type/:id" element={<Detail />} />
         <Route path="/person/:id" element={<ActorPage />} />

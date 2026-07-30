@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ref, set, get, onValue, push, remove } from 'firebase/database';
+import { ref, set, get, onValue, push, remove, update } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -45,8 +45,14 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
       const data = snap.val();
 
       if (data.password) {
-        setPasswordPrompt(true);
-        return;
+        if (user.uid === data.host) {
+          // Host auto-join
+        } else if (sessionStorage.getItem('wp_auth_' + initialRoomCode) === data.password) {
+          sessionStorage.removeItem('wp_auth_' + initialRoomCode);
+        } else {
+          setPasswordPrompt(true);
+          return;
+        }
       }
 
       const memberCount = Object.keys(data.members || {}).length;
@@ -158,7 +164,10 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
   useEffect(() => {
     if (isHost && roomCode) {
       syncIntervalRef.current = setInterval(() => {
-        set(ref(db, `watchParties/${roomCode}/hostTimestamp`), Date.now());
+        update(ref(db, `watchParties/${roomCode}`), {
+          hostTimestamp: Date.now(),
+          isPlaying: true,
+        });
       }, 5000);
     }
     return () => clearInterval(syncIntervalRef.current);

@@ -77,6 +77,8 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
       const roomData = {
         host: user.uid,
         hostName: userProfile?.displayName || userProfile?.email || 'Host',
+        title: title || '',
+        posterPath: posterPath || null,
         tmdbId,
         mediaType,
         season: isTV ? selectedSeason : null,
@@ -94,6 +96,9 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
         },
       };
       await set(ref(db, `watchParties/${code}`), roomData);
+      if (isPrivate && password) {
+        sessionStorage.setItem('wp_auth_' + code, password);
+      }
       const params = new URLSearchParams();
       params.set('room', code);
       if (isTV) {
