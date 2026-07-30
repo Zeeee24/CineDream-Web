@@ -141,8 +141,8 @@ export default function WatchPage() {
       clearTimeout(loadTimerRef.current);
       loadTimerRef.current = setTimeout(() => {
         setLoading(false);
-        setLoadError(true);
-      }, 15000);
+        setLoadError(false);
+      }, 5000);
     } else {
       clearTimeout(loadTimerRef.current);
     }
@@ -296,8 +296,17 @@ export default function WatchPage() {
           referrerPolicy="origin"
           className="player-iframe"
           style={{ pointerEvents: 'auto' }}
-          onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
-          onError={() => { setLoading(false); setLoadError(true); }}
+          onLoad={() => {
+            setLoading(false);
+            setLoadError(false);
+            setFallbackCountdown(null);
+            clearTimeout(loadTimerRef.current);
+            clearInterval(fallbackTimerRef.current);
+          }}
+          onError={() => {
+            setLoading(false);
+            setLoadError(true);
+          }}
         />
 
         {loading && (
