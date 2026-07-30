@@ -3,24 +3,19 @@ import { ref, set, get, onValue, push, remove } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
-export default function WatchParty({ tmdbId, mediaType, season, episode, activeServer, onSync, onServerChange, onTimestampSync }) {
+export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaType, season, episode, activeServer, onSync, onServerChange, onTimestampSync }) {
   const { user, userProfile, isLoggedIn } = useAuth();
-  const [roomCode, setRoomCode] = useState('');
-  const [joinCode, setJoinCode] = useState('');
+  const [roomCode, setRoomCode] = useState(initialRoomCode || '');
   const [members, setMembers] = useState({});
   const [isHost, setIsHost] = useState(false);
   const [copied, setCopied] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
-  const [showPanel, setShowPanel] = useState(false);
   const [hostName, setHostName] = useState('');
+  const [passwordPrompt, setPasswordPrompt] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [joining, setJoining] = useState(false);
   const chatEndRef = useRef(null);
   const roomRef = useRef(null);
   const syncIntervalRef = useRef(null);
@@ -35,11 +30,80 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     setMembers({});
     setIsHost(false);
     setChatMessages([]);
-    setShowPanel(false);
     roomRef.current = null;
     joinedRef.current = false;
     clearInterval(syncIntervalRef.current);
   }, [roomCode, user]);
+
+  useEffect(() => {
+    if (!initialRoomCode || !isLoggedIn || !user) return;
+
+    async function joinExistingRoom() {
+      const r = ref(db, `watchParties/${initialRoomCode}`);
+      const snap = await get(r);
+      if (!snap.exists()) return;
+      const data = snap.val();
+
+      if (data.password) {
+        setPasswordPrompt(true);
+        return;
+      }
+
+      const memberCount = Object.keys(data.members || {}).length;
+      if (memberCount >= 8) return;
+
+      await set(ref(db, `watchParties/${initialRoomCode}/members/${user.uid}`), {
+        displayName: userProfile?.displayName || 'Member',
+        photoURL: userProfile?.photoURL || '',
+        role: 'member',
+      });
+
+      setRoomCode(initialRoomCode);
+      setIsHost(false);
+      joinedRef.current = true;
+
+      if (data.activeServer !== undefined && onServerChange) {
+        onServerChange(data.activeServer);
+      }
+    }
+
+    joinExistingRoom();
+  }, [initialRoomCode, isLoggedIn, user, userProfile, onServerChange]);
+
+  async function joinWithPassword() {
+    if (!passwordInput.trim()) return;
+    setJoining(true);
+    setPasswordError('');
+    try {
+      const r = ref(db, `watchParties/${initialRoomCode}`);
+      const snap = await get(r);
+      if (!snap.exists()) { setPasswordError('Room not found'); return; }
+      const data = snap.val();
+      if (data.password !== passwordInput.trim()) { setPasswordError('Incorrect password'); return; }
+
+      const memberCount = Object.keys(data.members || {}).length;
+      if (memberCount >= 8) { setPasswordError('Room is full'); return; }
+
+      await set(ref(db, `watchParties/${initialRoomCode}/members/${user.uid}`), {
+        displayName: userProfile?.displayName || 'Member',
+        photoURL: userProfile?.photoURL || '',
+        role: 'member',
+      });
+
+      setRoomCode(initialRoomCode);
+      setIsHost(false);
+      setPasswordPrompt(false);
+      joinedRef.current = true;
+
+      if (data.activeServer !== undefined && onServerChange) {
+        onServerChange(data.activeServer);
+      }
+    } catch {
+      setPasswordError('Failed to join room');
+    } finally {
+      setJoining(false);
+    }
+  }
 
   useEffect(() => {
     if (!roomCode || !user) return;
@@ -55,7 +119,7 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
       setMembers(data.members || {});
       setHostName(data.hostName || '');
 
-      if (!isHost && data.activeServer !== undefined && onServerChange) {
+      if (user.uid !== data.host && data.activeServer !== undefined && onServerChange) {
         onServerChange(data.activeServer);
       }
 
@@ -64,16 +128,14 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
         onSync(syncSeason, syncEpisode, syncServer);
       }
 
-      if (!isHost && data.hostTimestamp !== undefined && joinedRef.current && onTimestampSync) {
+      if (user.uid !== data.host && data.hostTimestamp !== undefined && joinedRef.current && onTimestampSync) {
         onTimestampSync(data.hostTimestamp);
         joinedRef.current = false;
       }
     });
 
-    return () => {
-      unsub();
-    };
-  }, [roomCode, user, onSync, isHost, onServerChange, onTimestampSync, leaveRoom]);
+    return () => { unsub(); };
+  }, [roomCode, user, onSync, onServerChange, onTimestampSync, leaveRoom]);
 
   useEffect(() => {
     if (!roomCode) return;
@@ -102,67 +164,6 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     return () => clearInterval(syncIntervalRef.current);
   }, [isHost, roomCode]);
 
-  async function createRoom() {
-    if (!user || !isLoggedIn) return;
-    const code = generateCode();
-    const roomData = {
-      host: user.uid,
-      hostName: userProfile?.displayName || userProfile?.email || 'Host',
-      tmdbId,
-      mediaType,
-      season: season || null,
-      episode: episode || null,
-      activeServer,
-      hostTimestamp: Date.now(),
-      createdAt: Date.now(),
-      members: {
-        [user.uid]: {
-          displayName: userProfile?.displayName || 'Host',
-          photoURL: userProfile?.photoURL || '',
-          role: 'host',
-        },
-      },
-    };
-    await set(ref(db, `watchParties/${code}`), roomData);
-    setRoomCode(code);
-    setIsHost(true);
-    setShowPanel(true);
-  }
-
-  async function joinRoom(code) {
-    if (!user || !isLoggedIn || !code.trim()) return;
-    const upperCode = code.trim().toUpperCase();
-    const r = ref(db, `watchParties/${upperCode}`);
-    const snap = await get(r);
-    if (!snap.exists()) {
-      alert('Room not found');
-      return;
-    }
-    const data = snap.val();
-    if (data.tmdbId !== tmdbId) {
-      alert('Room is watching different content');
-      return;
-    }
-    const memberCount = Object.keys(data.members || {}).length;
-    if (memberCount >= 8) {
-      alert('Room is full');
-      return;
-    }
-    await set(ref(db, `watchParties/${upperCode}/members/${user.uid}`), {
-      displayName: userProfile?.displayName || 'Member',
-      photoURL: userProfile?.photoURL || '',
-      role: 'member',
-    });
-    setRoomCode(upperCode);
-    setIsHost(false);
-    setShowPanel(true);
-    joinedRef.current = true;
-
-    if (data.activeServer !== undefined && onServerChange) {
-      onServerChange(data.activeServer);
-    }
-  }
-
   async function handleSync() {
     if (!roomCode || !isHost) return;
     await set(ref(db, `watchParties/${roomCode}/syncEvent`), {
@@ -172,11 +173,6 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
       ts: Date.now(),
     });
     if (onSync) onSync(season, episode, activeServer);
-  }
-
-  async function handleServerChange(newServer) {
-    if (!roomCode || !isHost) return;
-    await set(ref(db, `watchParties/${roomCode}/activeServer`), newServer);
   }
 
   async function sendChat(e) {
@@ -191,122 +187,130 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     setChatInput('');
   }
 
-  const memberCount = Object.keys(members).length;
-  const isWatching = !!roomCode;
-
   if (!isLoggedIn) {
     return (
-      <div className="wp-container">
-        <div className="wp-login-prompt">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
-          <span>Sign in to start a Watch Party</span>
-        </div>
+      <div className="wp-login-prompt">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+        </svg>
+        <span>Sign in to join the Watch Party</span>
       </div>
     );
   }
 
-  return (
-    <div className="wp-container">
-      {!showPanel ? (
-        <div className="wp-lobby">
-          <button className="wp-btn wp-btn-create" onClick={createRoom}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+  if (passwordPrompt) {
+    return (
+      <div className="wp-password-prompt">
+        <p>This room is private</p>
+        <div className="wp-password-row">
+          <input
+            className="wp-chat-input"
+            type="password"
+            placeholder="Enter password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') joinWithPassword(); }}
+          />
+          <button className="wp-btn wp-btn-send" onClick={joinWithPassword} disabled={joining || !passwordInput.trim()}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
-            Create Watch Party
           </button>
-          <div className="wp-join-row">
-            <input
-              className="wp-join-input"
-              placeholder="Enter room code"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              maxLength={6}
-            />
-            <button
-              className="wp-btn wp-btn-join"
-              onClick={() => joinRoom(joinCode)}
-              disabled={!joinCode.trim()}
-            >
-              Join
+        </div>
+        {passwordError && <p className="wp-error">{passwordError}</p>}
+      </div>
+    );
+  }
+
+  if (!roomCode) return null;
+
+  const memberCount = Object.keys(members).length;
+
+  return (
+    <div className="wp-embedded">
+      <div className="wp-header">
+        <div className="wp-room-info">
+          <span className="wp-badge">{isHost ? 'Host' : 'Member'}</span>
+          <span className="wp-code-label">Room: <strong>{roomCode}</strong></span>
+          <span className="wp-member-count">
+            <span className="wp-online-dot" />
+            {memberCount}
+          </span>
+        </div>
+        <div className="wp-header-actions">
+          {isHost && (
+            <button className="wp-btn wp-btn-sync" onClick={handleSync} title="Sync all members">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
             </button>
-          </div>
+          )}
+          <button
+            className="wp-btn wp-btn-copy"
+            onClick={() => { navigator.clipboard?.writeText(roomCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+            title="Copy room code"
+          >
+            {copied ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+            )}
+          </button>
+          <button className="wp-btn wp-btn-leave" onClick={leaveRoom} title="Leave room">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
         </div>
-      ) : (
-        <div className="wp-active">
-          <div className="wp-header">
-            <div className="wp-room-info">
-              <span className="wp-badge">{isHost ? 'Host' : 'Member'}</span>
-              <span className="wp-code-label">Room: <strong>{roomCode}</strong></span>
-              <span className="wp-member-count">{memberCount} member{memberCount !== 1 ? 's' : ''}</span>
-            </div>
-            <div className="wp-header-actions">
-              {isHost && (
-                <button className="wp-btn wp-btn-sync" onClick={handleSync}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                  </svg>
-                  Sync
-                </button>
-              )}
-              <button
-                className="wp-btn wp-btn-copy"
-                onClick={() => { navigator.clipboard?.writeText(roomCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-              >
-                {copied ? 'Copied!' : 'Copy Code'}
-              </button>
-              <button className="wp-btn wp-btn-leave" onClick={leaveRoom}>Leave</button>
-            </div>
-          </div>
+      </div>
 
-          <div className="wp-members">
-            {Object.entries(members).map(([uid, m]) => (
-              <div key={uid} className="wp-member">
-                {m.photoURL ? (
-                  <img src={m.photoURL} alt="" className="wp-member-avatar" />
-                ) : (
-                  <span className="wp-member-avatar wp-member-initials">
-                    {(m.displayName || '?').charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span className="wp-member-name">{m.displayName}</span>
-                {m.role === 'host' && <span className="wp-host-badge">Host</span>}
-              </div>
-            ))}
+      <div className="wp-members">
+        {Object.entries(members).map(([uid, m]) => (
+          <div key={uid} className="wp-member">
+            {m.photoURL ? (
+              <img src={m.photoURL} alt="" className="wp-member-avatar" />
+            ) : (
+              <span className="wp-member-avatar wp-member-initials">
+                {(m.displayName || '?').charAt(0).toUpperCase()}
+              </span>
+            )}
+            {m.role === 'host' && <span className="wp-host-badge">H</span>}
           </div>
+        ))}
+      </div>
 
-          <div className="wp-chat">
-            <div className="wp-chat-messages">
-              {chatMessages.length === 0 && (
-                <p className="wp-chat-empty">No messages yet. Say hello!</p>
-              )}
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`wp-chat-msg ${msg.uid === user?.uid ? 'own' : ''}`}>
-                  {msg.uid !== user?.uid && <span className="wp-chat-name">{msg.name}</span>}
-                  <span className="wp-chat-text">{msg.text}</span>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
+      <div className="wp-chat">
+        <div className="wp-chat-messages">
+          {chatMessages.length === 0 && (
+            <p className="wp-chat-empty">No messages yet. Say hello!</p>
+          )}
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={`wp-chat-msg ${msg.uid === user?.uid ? 'own' : ''}`}>
+              {msg.uid !== user?.uid && <span className="wp-chat-name">{msg.name}</span>}
+              <span className="wp-chat-text">{msg.text}</span>
             </div>
-            <form className="wp-chat-form" onSubmit={sendChat}>
-              <input
-                className="wp-chat-input"
-                placeholder="Type a message..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                maxLength={200}
-              />
-              <button className="wp-btn wp-btn-send" type="submit" disabled={!chatInput.trim()}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-              </button>
-            </form>
-          </div>
+          ))}
+          <div ref={chatEndRef} />
         </div>
-      )}
+        <form className="wp-chat-form" onSubmit={sendChat}>
+          <input
+            className="wp-chat-input"
+            placeholder="Type a message..."
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            maxLength={200}
+          />
+          <button className="wp-btn wp-btn-send" type="submit" disabled={!chatInput.trim()}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

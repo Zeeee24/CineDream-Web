@@ -6,6 +6,7 @@ import { formatDetailInfo, getYear, getCertification, getTVCertification } from 
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
+import CreateRoomModal from '../components/CreateRoomModal';
 import { SkeletonHero } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
@@ -21,6 +22,7 @@ export default function Detail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [, setListVersion] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
@@ -218,20 +220,13 @@ export default function Detail() {
               )}
               <button
                 className="btn btn-secondary btn-large"
-                onClick={() => {
-                  const url = window.location.href;
-                  if (navigator.share) {
-                    navigator.share({ title, url }).catch(() => {});
-                  } else {
-                    navigator.clipboard.writeText(url).catch(() => {});
-                  }
-                }}
+                onClick={() => setShowCreateRoom(true)}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
                 </svg>
-                Share
+                Watch Party
               </button>
               <button
                 className={`btn btn-secondary btn-large ${isInWatchlist(Number(id)) ? 'btn-list-active' : ''}`}
@@ -292,6 +287,16 @@ export default function Detail() {
       {showTrailer && trailerKey && (
         <TrailerModal videoKey={trailerKey} onClose={() => setShowTrailer(false)} />
       )}
+
+      <CreateRoomModal
+        isOpen={showCreateRoom}
+        onClose={() => setShowCreateRoom(false)}
+        tmdbId={id}
+        mediaType={type}
+        title={title}
+        posterPath={data.poster_path}
+        seasons={seasons}
+      />
     </div>
   );
 }
