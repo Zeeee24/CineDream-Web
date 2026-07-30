@@ -26,6 +26,21 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
   const syncIntervalRef = useRef(null);
   const joinedRef = useRef(false);
 
+  const leaveRoom = useCallback(() => {
+    if (roomCode && user) {
+      const memRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
+      remove(memRef).catch(() => {});
+    }
+    setRoomCode('');
+    setMembers({});
+    setIsHost(false);
+    setChatMessages([]);
+    setShowPanel(false);
+    roomRef.current = null;
+    joinedRef.current = false;
+    clearInterval(syncIntervalRef.current);
+  }, [roomCode, user]);
+
   useEffect(() => {
     if (!roomCode || !user) return;
     const r = ref(db, `watchParties/${roomCode}`);
@@ -86,21 +101,6 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     }
     return () => clearInterval(syncIntervalRef.current);
   }, [isHost, roomCode]);
-
-  const leaveRoom = useCallback(() => {
-    if (roomCode && user) {
-      const memRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
-      remove(memRef).catch(() => {});
-    }
-    setRoomCode('');
-    setMembers({});
-    setIsHost(false);
-    setChatMessages([]);
-    setShowPanel(false);
-    roomRef.current = null;
-    joinedRef.current = false;
-    clearInterval(syncIntervalRef.current);
-  }, [roomCode, user]);
 
   async function createRoom() {
     if (!user || !isLoggedIn) return;
