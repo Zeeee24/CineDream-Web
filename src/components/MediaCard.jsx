@@ -76,7 +76,7 @@ export default function MediaCard({ item, index, showRank, progress, isHovered, 
     navigate(`/${mediaType}/${item.id}`);
   }
 
-  const progressPct = progress > 0 ? Math.min((progress.progressSeconds / progress.durationSeconds) * 100, 100) : 0;
+  const progressPct = progress && progress.durationSeconds > 0 ? Math.min((progress.progressSeconds / progress.durationSeconds) * 100, 100) : 0;
 
   let cardClass = `media-card ${isTV ? 'tv-focusable' : ''}`;
   if (inRow) {

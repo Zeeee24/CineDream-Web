@@ -19,12 +19,14 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   const navigate = useNavigate();
   const { isTV } = useDevice();
   const logoCacheRef = useRef({});
+  const fadeTimerRef = useRef(null);
 
   const nextSlide = useCallback(() => {
+    clearTimeout(fadeTimerRef.current);
     setPrevIndex(current);
     setFading(true);
     setImgLoaded(false);
-    setTimeout(() => {
+    fadeTimerRef.current = setTimeout(() => {
       setCurrent((prev) => (prev + 1) % items.length);
       setFading(false);
     }, 500);
@@ -33,7 +35,7 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   useEffect(() => {
     if (items.length <= 1) return;
     const timer = setInterval(nextSlide, interval);
-    return () => clearInterval(timer);
+    return () => { clearInterval(timer); clearTimeout(fadeTimerRef.current); };
   }, [nextSlide, items.length, interval]);
 
   useEffect(() => {
@@ -212,10 +214,11 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
             key={i}
             className={`hero-dot ${i === current ? 'active' : ''}`}
             onClick={() => {
+              clearTimeout(fadeTimerRef.current);
               setPrevIndex(current);
               setFading(true);
               setImgLoaded(false);
-              setTimeout(() => {
+              fadeTimerRef.current = setTimeout(() => {
                 setCurrent(i);
                 setFading(false);
               }, 500);

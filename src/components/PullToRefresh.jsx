@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDevice } from '../hooks/useDevice';
 
 export default function PullToRefresh({ children, onRefresh }) {
@@ -8,7 +8,12 @@ export default function PullToRefresh({ children, onRefresh }) {
   const [success, setSuccess] = useState(false);
   const [pullY, setPullY] = useState(0);
   const startY = useRef(0);
+  const successTimerRef = useRef(null);
   const THRESHOLD = 80;
+
+  useEffect(() => {
+    return () => clearTimeout(successTimerRef.current);
+  }, []);
 
   const handleTouchStart = useCallback((e) => {
     if (window.scrollY > 0 || refreshing) return;
@@ -31,8 +36,9 @@ export default function PullToRefresh({ children, onRefresh }) {
       setRefreshing(true);
       try {
         await onRefresh();
+        clearTimeout(successTimerRef.current);
         setSuccess(true);
-        setTimeout(() => setSuccess(false), 1200);
+        successTimerRef.current = setTimeout(() => setSuccess(false), 1200);
       } catch {
         /* ignore */
       }

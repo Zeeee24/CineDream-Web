@@ -22,14 +22,6 @@ function cloudWrite(path, data) {
   set(ref(db, `users/${auth.currentUser.uid}/${path}`), data).catch(() => {});
 }
 
-function buildHistoryObject(items) {
-  const obj = {};
-  for (const item of items) {
-    obj[String(item.tmdbId)] = item;
-  }
-  return obj;
-}
-
 export function addToHistory(item) {
   const entry = {
     tmdbId: item.tmdbId,

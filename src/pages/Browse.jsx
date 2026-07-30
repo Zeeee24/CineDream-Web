@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { discoverMovies, discoverTV, getMovieGenres, getTVGenres } from '../services/tmdb';
 import MediaCard from '../components/MediaCard';
 import { SkeletonGrid } from '../components/Skeleton';
@@ -13,7 +12,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function Browse() {
-  const navigate = useNavigate();
   const [type, setType] = useState('movie');
   const [genreId, setGenreId] = useState('');
   const [sortBy, setSortBy] = useState('popularity.desc');

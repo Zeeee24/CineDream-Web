@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { getTVSeason, img } from '../services/tmdb';
 import { isEpisodeWatched, toggleEpisodeWatched, getEpisodeProgress } from '../services/watchHistory';
 

@@ -58,7 +58,7 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     return () => {
       unsub();
     };
-  }, [roomCode, user, onSync, isHost, onServerChange, onTimestampSync]);
+  }, [roomCode, user, onSync, isHost, onServerChange, onTimestampSync, leaveRoom]);
 
   useEffect(() => {
     if (!roomCode) return;

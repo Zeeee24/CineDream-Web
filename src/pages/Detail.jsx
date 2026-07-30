@@ -6,7 +6,7 @@ import { formatDetailInfo, getYear, getCertification, getTVCertification } from 
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
-import { SkeletonHero, SkeletonDetailInfo } from '../components/Skeleton';
+import { SkeletonHero } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
 import { hapticLight } from '../utils/haptics';
@@ -21,8 +21,6 @@ export default function Detail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
-  const [selectedSeason, setSelectedSeason] = useState(1);
-  const [selectedEpisode, setSelectedEpisode] = useState(1);
   const [, setListVersion] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
