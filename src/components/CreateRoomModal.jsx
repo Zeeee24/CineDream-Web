@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ref, set } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { searchMulti, getTVSeason, img } from '../services/tmdb';
+import { searchMulti, getTVDetails, getTVSeason, img } from '../services/tmdb';
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -39,6 +39,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState('');
   const [creating, setCreating] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const overlayRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -127,11 +128,24 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
     }
   }
 
-  function handleSelectMedia(item) {
+  async function handleSelectMedia(item) {
     setSelectedMedia(item);
     setSearchResults([]);
     setSearchQuery('');
-    setStep(item.media_type === 'tv' ? 2 : 3);
+    if (item.media_type === 'tv') {
+      setMediaLoading(true);
+      try {
+        const details = await getTVDetails(item.id);
+        setSelectedMedia((prev) => ({ ...prev, seasons: details.seasons || [] }));
+      } catch {
+        setSelectedMedia((prev) => ({ ...prev, seasons: [] }));
+      } finally {
+        setMediaLoading(false);
+      }
+      setStep(2);
+    } else {
+      setStep(3);
+    }
   }
 
   function handleOverlayClick(e) {
@@ -285,39 +299,48 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
 
         {step === 2 && isTV && (
           <div className="cr-step">
-            <label className="cr-label">Season</label>
-            <select
-              className="cr-select"
-              value={selectedSeason}
-              onChange={(e) => { setSelectedSeason(Number(e.target.value)); setSelectedEpisode(1); }}
-            >
-              {validSeasons.map((s) => (
-                <option key={s.id} value={s.season_number}>Season {s.season_number}</option>
-              ))}
-            </select>
+            {mediaLoading ? (
+              <div className="cr-search-loading">
+                <div className="player-loading-spinner" style={{ width: 24, height: 24 }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Loading episodes...</span>
+              </div>
+            ) : (
+              <>
+                <label className="cr-label">Season</label>
+                <select
+                  className="cr-select"
+                  value={selectedSeason}
+                  onChange={(e) => { setSelectedSeason(Number(e.target.value)); setSelectedEpisode(1); }}
+                >
+                  {validSeasons.map((s) => (
+                    <option key={s.id} value={s.season_number}>Season {s.season_number}</option>
+                  ))}
+                </select>
 
-            <label className="cr-label">Episode</label>
-            <select
-              className="cr-select"
-              value={selectedEpisode}
-              onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-            >
-              {episodesLoading ? (
-                <option value={selectedEpisode}>Loading...</option>
-              ) : episodes.length > 0 ? (
-                episodes.map((ep) => (
-                  <option key={ep.id} value={ep.episode_number}>
-                    E{ep.episode_number} — {ep.name || `Episode ${ep.episode_number}`}
-                  </option>
-                ))
-              ) : (
-                <option value={1}>Episode 1</option>
-              )}
-            </select>
+                <label className="cr-label">Episode</label>
+                <select
+                  className="cr-select"
+                  value={selectedEpisode}
+                  onChange={(e) => setSelectedEpisode(Number(e.target.value))}
+                >
+                  {episodesLoading ? (
+                    <option value={selectedEpisode}>Loading...</option>
+                  ) : episodes.length > 0 ? (
+                    episodes.map((ep) => (
+                      <option key={ep.id} value={ep.episode_number}>
+                        E{ep.episode_number} — {ep.name || `Episode ${ep.episode_number}`}
+                      </option>
+                    ))
+                  ) : (
+                    <option value={1}>Episode 1</option>
+                  )}
+                </select>
+              </>
+            )}
 
             <div className="cr-nav">
               <button className="btn btn-secondary" onClick={() => setStep(1)}>Back</button>
-              <button className="auth-btn-submit" onClick={() => setStep(3)}>Next</button>
+              <button className="auth-btn-submit" onClick={() => setStep(3)} disabled={mediaLoading || validSeasons.length === 0}>Next</button>
             </div>
           </div>
         )}

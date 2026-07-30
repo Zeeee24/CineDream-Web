@@ -4311,8 +4311,13 @@ button:focus-visible,
   position: absolute;
   top: 16px;
   right: 16px;
+  z-index: 50;
+  pointer-events: auto;
   color: var(--text-muted);
   padding: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
   transition: color 0.2s, transform 0.2s;
 }
 
@@ -5443,23 +5448,6 @@ button:focus-visible,
   50% { opacity: 0.7; }
 }
 
-@media (max-width: 600px) {
-  .wp-lobby-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .wp-lobby-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .wp-lobby-create {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 /* Create Room Modal - Search Step */
 .cr-step-label {
   display: block;
@@ -5599,4 +5587,73 @@ button:focus-visible,
   color: var(--text-muted);
   font-size: 0.82rem;
   padding: 20px;
+}
+
+/* Lobby Join via Code */
+.wp-lobby-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wp-join-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.wp-join-input {
+  width: 130px;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.wp-join-input:focus {
+  border-color: var(--accent);
+}
+
+.wp-join-input::placeholder {
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: inherit;
+  color: var(--text-muted);
+}
+
+.wp-join-btn {
+  flex-shrink: 0;
+}
+
+.wp-join-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .wp-lobby-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .wp-join-form {
+    width: 100%;
+  }
+
+  .wp-join-input {
+    flex: 1;
+  }
+
+  .wp-lobby-create {
+    width: 100%;
+    justify-content: center;
+  }
 }

@@ -12,6 +12,9 @@ export default function WatchParties() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinError, setJoinError] = useState('');
+  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,18 +70,68 @@ export default function WatchParties() {
     return () => { cancelled = true; };
   }, []);
 
+  async function handleJoinCode(e) {
+    e.preventDefault();
+    const code = joinCode.trim().toUpperCase();
+    if (!code) return;
+    setJoining(true);
+    setJoinError('');
+    try {
+      const snap = await get(ref(db, `watchParties/${code}`));
+      if (!snap.exists()) {
+        setJoinError('Room not found');
+        return;
+      }
+      const room = snap.val();
+      const memberCount = Object.keys(room.members || {}).length;
+      if (memberCount === 0) {
+        setJoinError('Room is empty');
+        return;
+      }
+      if (room.password) {
+        sessionStorage.setItem('wp_auth_' + code, room.password);
+      }
+      navigate(`/watch/${room.mediaType}/${room.tmdbId}?room=${code}`);
+    } catch {
+      setJoinError('Failed to find room');
+    } finally {
+      setJoining(false);
+    }
+  }
+
   return (
     <div className="wp-lobby-page">
       <div className="wp-lobby-header">
         <h1 className="wp-lobby-title">Watch Parties</h1>
-        {isLoggedIn && (
-          <button className="btn btn-primary wp-lobby-create" onClick={() => setCreateOpen(true)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Create Room
-          </button>
-        )}
+        <div className="wp-lobby-actions">
+          <form className="wp-join-form" onSubmit={handleJoinCode}>
+            <input
+              className="wp-join-input"
+              type="text"
+              placeholder="Enter room code"
+              value={joinCode}
+              onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
+              maxLength={6}
+              disabled={joining}
+            />
+            <button
+              className="btn btn-secondary wp-join-btn"
+              type="submit"
+              disabled={joining || !joinCode.trim()}
+            >
+              {joining ? '...' : 'Join'}
+            </button>
+          </form>
+          {joinError && <span className="wp-join-error">{joinError}</span>}
+          {isLoggedIn && (
+            <button className="btn btn-primary wp-lobby-create" onClick={() => setCreateOpen(true)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Create Room
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
