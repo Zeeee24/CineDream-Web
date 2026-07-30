@@ -9,6 +9,7 @@ import Browse from './pages/Browse';
 import Detail from './pages/Detail';
 import ActorPage from './pages/ActorPage';
 import MyList from './pages/MyList';
+import WatchPage from './pages/WatchPage';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -37,9 +38,10 @@ export default function App() {
     <BrowserRouter basename="/CineDream-Web">
       <ScrollProgress />
       <BackToTop />
-      <Layout>
-        <AnimatedRoutes />
-      </Layout>
+      <Routes>
+        <Route path="/watch/:type/:id" element={<WatchPage />} />
+        <Route path="*" element={<Layout><AnimatedRoutes /></Layout>} />
+      </Routes>
     </BrowserRouter>
   );
 }
