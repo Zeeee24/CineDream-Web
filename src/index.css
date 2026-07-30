@@ -1912,6 +1912,8 @@ img {
   background: #000;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .watch-header {
@@ -1982,6 +1984,7 @@ img {
   flex-direction: column;
   gap: 16px;
   flex: 1;
+  min-height: 0;
 }
 
 .watch-loading-skeleton {

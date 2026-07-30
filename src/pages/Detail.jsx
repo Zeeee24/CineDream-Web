@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { getMovieDetails, getTVDetails, getWatchProviders, getTVWatchProviders, img } from '../services/tmdb';
+import { getMovieDetails, getTVDetails, img } from '../services/tmdb';
 import BackButton from '../components/BackButton';
 import { formatDetailInfo, getYear, getCertification, getTVCertification } from '../utils/helpers';
 import { useDevice } from '../hooks/useDevice';
@@ -27,7 +27,7 @@ export default function Detail() {
   const [scrollY, setScrollY] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [providers, setProviders] = useState(null);
+
   const touchStartRef = useRef({ x: 0, y: 0 });
 
   const isMovie = type === 'movie';
@@ -96,11 +96,7 @@ export default function Detail() {
     window.scrollTo(0, 0);
   }, [type, id, isMovie, searchParams]);
 
-  useEffect(() => {
-    if (!data) return;
-    const fetchProviders = isMovie ? getWatchProviders : getTVWatchProviders;
-    fetchProviders(id).then(setProviders).catch(() => {});
-  }, [id, isMovie, data]);
+
 
   if (loading || !data) {
     return (
@@ -128,8 +124,7 @@ export default function Detail() {
 
   const infoLine = formatDetailInfo(year, rating, runtime, cert);
   const seasons = data.seasons || [];
-  const usProviders = providers?.US || {};
-  const flatrateProviders = usProviders.flatrate || [];
+
 
   function handlePlayNow() {
     navigate(`/watch/${type}/${id}`);
@@ -258,23 +253,6 @@ export default function Detail() {
             </div>
           </div>
         </div>
-
-        {flatrateProviders.length > 0 && (
-          <section className="detail-section detail-providers-section">
-            <h2 className="section-title">Watch On</h2>
-            <div className="providers-row">
-              {flatrateProviders.map((p) => (
-                <div key={p.provider_id} className="provider-badge" title={p.provider_name}>
-                  {p.logo_path ? (
-                    <img src={img.logo(p.logo_path, 'w92')} alt={p.provider_name} className="provider-logo" />
-                  ) : (
-                    <span className="provider-name-text">{p.provider_name}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {!isMovie && seasons.length > 0 && (
           <EpisodeGrid
