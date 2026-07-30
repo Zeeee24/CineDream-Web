@@ -289,8 +289,9 @@ export default function WatchPage() {
           key={`${activeServer}-${id}-${season}-${episode}`}
           src={embedUrl}
           title={title}
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture; encrypted-media-xr; gyroscope; accelerometer"
           allowFullScreen
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-presentation"
           referrerPolicy="origin"
           className="player-iframe"
           style={{ pointerEvents: 'auto' }}
