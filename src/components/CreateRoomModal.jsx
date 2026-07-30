@@ -220,25 +220,37 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   }
 
   return (
-    <div className="auth-modal-overlay" onPointerDown={onClose}>
-      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <button
-          type="button"
-          className="auth-modal-close"
-          aria-label="Close modal"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose();
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
+    <div
+      className="fixed inset-0 z-[99999] pointer-events-auto bg-zinc-950 sm:bg-black/80 sm:backdrop-blur-sm sm:flex sm:items-center sm:justify-center sm:p-4"
+      onPointerDown={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="relative w-full h-full sm:h-auto sm:max-w-md bg-zinc-950 sm:bg-zinc-900 sm:rounded-2xl p-4 sm:p-6 sm:shadow-2xl sm:border sm:border-zinc-800 pointer-events-auto overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6 pt-2 sm:pt-0">
+          <h2 className="text-2xl sm:text-xl font-bold text-white">Create Watch Party</h2>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            className="p-3 sm:p-2 bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 rounded-full cursor-pointer z-[100000]"
+          >
+            <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-        <h2 className="auth-modal-title">Create Watch Party</h2>
-        <span className="cr-step-label">{getStepLabel()}</span>
+        <span className="text-sm text-zinc-400 mb-4 block">{getStepLabel()}</span>
 
         {!hasInitialContent && step === 1 && (
           <div className="cr-step">
