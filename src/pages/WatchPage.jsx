@@ -58,10 +58,12 @@ export default function WatchPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
       setLoading(true);
       try {
         const details = isMovie ? await getMovieDetails(id) : await getTVDetails(id);
+        if (cancelled) return;
         setData(details);
         addToHistory({
           tmdbId: Number(id),
@@ -74,12 +76,14 @@ export default function WatchPage() {
         });
       } catch (err) {
         console.error('Failed to load details:', err);
+        if (!cancelled) setLoadError(true);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
     window.scrollTo(0, 0);
+    return () => { cancelled = true; };
   }, [type, id, isMovie]);
 
   useEffect(() => {
@@ -110,13 +114,16 @@ export default function WatchPage() {
   }, [id, season, episode]);
 
   useEffect(() => {
+    let cancelled = false;
     checkAllServers().then((h) => {
+      if (cancelled) return;
       setHealth(h);
       if (h[allServers[0].id] === false) {
         const firstOnline = allServers.findIndex((s) => h[s.id] !== false);
         if (firstOnline > 0) setActiveServer(firstOnline);
       }
-    });
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

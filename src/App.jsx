@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import Layout from './components/Layout';
 import ScrollProgress from './components/ScrollProgress';
 import BackToTop from './components/BackToTop';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Browse from './pages/Browse';
@@ -35,14 +36,14 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/CineDream-Web">
+    <HashRouter>
       <ScrollProgress />
       <BackToTop />
       <Routes>
-        <Route path="/watch/:type/:id" element={<WatchPage />} />
+        <Route path="/watch/:type/:id" element={<ErrorBoundary><WatchPage /></ErrorBoundary>} />
         <Route path="*" element={<Layout><AnimatedRoutes /></Layout>} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
@@ -51,7 +52,7 @@ function NotFound() {
     <div className="empty-page">
       <h1>404</h1>
       <p>Page not found</p>
-      <a href="/CineDream-Web/" className="btn btn-primary">Go Home</a>
+      <a href="/#/" className="btn btn-primary">Go Home</a>
     </div>
   );
 }
