@@ -8,7 +8,7 @@ export default function Footer() {
           <img src={logo} alt="CineDream Logo" className="logo-icon" />
           <span className="logo-text">CineDream</span>
         </div>
-        <p className="footer-copy">&copy; {new Date().getFullYear()} CineDream. All rights reserved.</p>
+        <p className="footer-copy">&copy; 1924 CineDream Made For Love</p>
       </div>
     </footer>
   );

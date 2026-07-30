@@ -4,7 +4,6 @@ import { img, getMovieImages, getTVImages } from '../services/tmdb';
 import { formatRuntime, getYear, truncate } from '../utils/helpers';
 import { useDevice } from '../hooks/useDevice';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
-import { getRating, toggleRating } from '../services/ratings';
 import { hapticLight } from '../utils/haptics';
 
 export default function HeroBanner({ items = [], interval = 8000 }) {
@@ -14,7 +13,6 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   const [logos, setLogos] = useState({});
   const [imgLoaded, setImgLoaded] = useState(false);
   const [, setListVersion] = useState(0);
-  const [, setRatingVersion] = useState(0);
   const [nowTimestamp] = useState(() => Date.now());
   const navigate = useNavigate();
   const { isTV } = useDevice();
@@ -89,7 +87,6 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
   }
 
   const inList = isInWatchlist(item.id);
-  const myRating = getRating(item.id);
 
   function handleToggleList() {
     hapticLight();
@@ -101,12 +98,6 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
       mediaType,
     });
     setListVersion((v) => v + 1);
-  }
-
-  function handleRate(rating) {
-    hapticLight();
-    toggleRating(item.id, rating);
-    setRatingVersion((v) => v + 1);
   }
 
   return (
@@ -187,24 +178,6 @@ export default function HeroBanner({ items = [], interval = 8000 }) {
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             )}
-          </button>
-          <button
-            className={`btn btn-icon ${myRating === 'up' ? 'btn-icon-active-up' : ''}`}
-            onClick={() => handleRate('up')}
-            aria-label="Thumbs up"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={myRating === 'up' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-            </svg>
-          </button>
-          <button
-            className={`btn btn-icon ${myRating === 'down' ? 'btn-icon-active-down' : ''}`}
-            onClick={() => handleRate('down')}
-            aria-label="Thumbs down"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={myRating === 'down' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
-            </svg>
           </button>
         </div>
       </div>
