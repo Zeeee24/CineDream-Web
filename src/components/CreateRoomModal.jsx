@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ref, set } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { searchMulti, getTVDetails, getTVSeason, img } from '../services/tmdb';
+import { searchMulti, getTVDetails, img } from '../services/tmdb';
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -70,7 +70,9 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
     if (!isTV || !activeTmdbId || !isOpen) return;
     let cancelled = false;
     setEpisodesLoading(true);
-    getTVSeason(activeTmdbId, selectedSeason)
+    const apiKey = import.meta.env.VITE_TMDB_API_KEY || 'b67e640f1b90b799a41e12416a891ed9';
+    fetch(`https://api.themoviedb.org/3/tv/${activeTmdbId}/season/${selectedSeason}?api_key=${apiKey}&language=en-US`)
+      .then((res) => res.json())
       .then((data) => {
         if (!cancelled) setEpisodes(data.episodes || []);
       })
@@ -205,6 +207,8 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
       setCreating(false);
     }
   }
+
+  if (!isOpen) return null;
 
   const posterUrl = activePosterPath ? img.poster(activePosterPath, 'w342') : null;
 
