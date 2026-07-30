@@ -31,6 +31,7 @@ export default function WatchPage() {
   const [resumePosition, setResumePosition] = useState(null);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const [watchTime, setWatchTime] = useState(0);
+  const [partyTimestamp, setPartyTimestamp] = useState(null);
   const playerRef = useRef(null);
   const loadTimerRef = useRef(null);
   const fallbackTimerRef = useRef(null);
@@ -260,19 +261,24 @@ export default function WatchPage() {
       </div>
 
       <div className="watch-player-container" ref={playerRef}>
-        {showResumeBanner && resumePosition && (
+        {showResumeBanner && (resumePosition || partyTimestamp) && (
           <div className="player-resume-banner glass-heavy">
             <div className="player-resume-info">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
               </svg>
-              <span>Resume from {Math.floor(resumePosition.progressSeconds / 60)}:{String(resumePosition.progressSeconds % 60).padStart(2, '0')}</span>
+              <span>
+                {partyTimestamp
+                  ? `Join party at ${Math.floor(partyTimestamp / 60)}:${String(partyTimestamp % 60).padStart(2, '0')}`
+                  : `Resume from ${Math.floor(resumePosition.progressSeconds / 60)}:${String(resumePosition.progressSeconds % 60).padStart(2, '0')}`
+                }
+              </span>
             </div>
             <div className="player-resume-actions">
-              <button className="btn btn-primary" onClick={() => setShowResumeBanner(false)}>
-                Resume
+              <button className="btn btn-primary" onClick={() => { setShowResumeBanner(false); setPartyTimestamp(null); }}>
+                {partyTimestamp ? 'Join at Current Time' : 'Resume'}
               </button>
-              <button className="btn btn-secondary" onClick={() => setShowResumeBanner(false)}>
+              <button className="btn btn-secondary" onClick={() => { setShowResumeBanner(false); setPartyTimestamp(null); }}>
                 Start Over
               </button>
             </div>
@@ -398,6 +404,14 @@ export default function WatchPage() {
             episode={episode}
             activeServer={activeServer}
             onSync={(s, e, server) => { switchServer(server); }}
+            onServerChange={(server) => { switchServer(server); }}
+            onTimestampSync={(ts) => {
+              const elapsed = Math.floor((Date.now() - ts) / 1000);
+              if (elapsed > 30) {
+                setPartyTimestamp(elapsed);
+                setShowResumeBanner(true);
+              }
+            }}
           />
         )}
       </div>

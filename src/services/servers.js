@@ -3,9 +3,9 @@ const servers = [
     id: 'cinezo',
     name: 'Server 1 — Cinezo',
     label: 'HD',
-    movie: (id) => `https://player.cinezo.live/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://player.cinezo.live/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://player.cinezo.live',
+    movie: (id) => `https://cinezo.net/embed/movie/${id}`,
+    tv: (id, season, episode) => `https://cinezo.net/embed/tv/${id}/${season}/${episode}`,
+    healthCheck: 'https://cinezo.net',
     usesTmdbId: true,
   },
   {
@@ -20,19 +20,19 @@ const servers = [
   {
     id: 'multiembed',
     name: 'Server 3 — MultiEmbed',
-    label: 'VIP',
+    label: 'Fast',
     movie: (id) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
     tv: (id, season, episode) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
     healthCheck: 'https://multiembed.mov',
     usesTmdbId: true,
   },
   {
-    id: 'autoembed',
-    name: 'Server 4 — AutoEmbed',
-    label: 'HD',
-    movie: (id) => `https://player.autoembed.cc/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`,
-    healthCheck: 'https://player.autoembed.cc',
+    id: 'vidlink',
+    name: 'Server 4 — VidLink',
+    label: 'Minimal Ads',
+    movie: (id) => `https://vidlink.pro/movie/${id}`,
+    tv: (id, season, episode) => `https://vidlink.pro/tv/${id}/${season}/${episode}`,
+    healthCheck: 'https://vidlink.pro',
     usesTmdbId: true,
   },
   {
@@ -91,8 +91,6 @@ export async function checkServerHealth(server) {
     serverHealth[server.id] = true;
     return true;
   } catch {
-    // For third-party embeds, fetch errors are typically CORS or Cloudflare blocks,
-    // not actual server downtime. We treat them as online so they are not skipped in the player.
     serverHealth[server.id] = true;
     return true;
   }

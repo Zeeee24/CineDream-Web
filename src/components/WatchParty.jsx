@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ref, set, get, onValue, push, remove, serverTimestamp } from 'firebase/database';
+import { ref, set, get, onValue, push, remove } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,7 +10,7 @@ function generateCode() {
   return code;
 }
 
-export default function WatchParty({ tmdbId, mediaType, season, episode, activeServer, onSync }) {
+export default function WatchParty({ tmdbId, mediaType, season, episode, activeServer, onSync, onServerChange, onTimestampSync }) {
   const { user, userProfile, isLoggedIn } = useAuth();
   const [roomCode, setRoomCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -23,6 +23,8 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
   const [hostName, setHostName] = useState('');
   const chatEndRef = useRef(null);
   const roomRef = useRef(null);
+  const syncIntervalRef = useRef(null);
+  const joinedRef = useRef(false);
 
   useEffect(() => {
     if (!roomCode || !user) return;
@@ -38,16 +40,25 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
       setMembers(data.members || {});
       setHostName(data.hostName || '');
 
+      if (!isHost && data.activeServer !== undefined && onServerChange) {
+        onServerChange(data.activeServer);
+      }
+
       if (data.syncEvent && onSync) {
         const { syncSeason, syncEpisode, syncServer } = data.syncEvent;
         onSync(syncSeason, syncEpisode, syncServer);
+      }
+
+      if (!isHost && data.hostTimestamp !== undefined && joinedRef.current && onTimestampSync) {
+        onTimestampSync(data.hostTimestamp);
+        joinedRef.current = false;
       }
     });
 
     return () => {
       unsub();
     };
-  }, [roomCode, user, onSync]);
+  }, [roomCode, user, onSync, isHost, onServerChange, onTimestampSync]);
 
   useEffect(() => {
     if (!roomCode) return;
@@ -67,6 +78,15 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     }
   }, [chatMessages]);
 
+  useEffect(() => {
+    if (isHost && roomCode) {
+      syncIntervalRef.current = setInterval(() => {
+        set(ref(db, `watchParties/${roomCode}/hostTimestamp`), Date.now());
+      }, 5000);
+    }
+    return () => clearInterval(syncIntervalRef.current);
+  }, [isHost, roomCode]);
+
   const leaveRoom = useCallback(() => {
     if (roomCode && user) {
       const memRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
@@ -78,6 +98,8 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     setChatMessages([]);
     setShowPanel(false);
     roomRef.current = null;
+    joinedRef.current = false;
+    clearInterval(syncIntervalRef.current);
   }, [roomCode, user]);
 
   async function createRoom() {
@@ -91,6 +113,7 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
       season: season || null,
       episode: episode || null,
       activeServer,
+      hostTimestamp: Date.now(),
       createdAt: Date.now(),
       members: {
         [user.uid]: {
@@ -133,6 +156,11 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
     setRoomCode(upperCode);
     setIsHost(false);
     setShowPanel(true);
+    joinedRef.current = true;
+
+    if (data.activeServer !== undefined && onServerChange) {
+      onServerChange(data.activeServer);
+    }
   }
 
   async function handleSync() {
@@ -144,6 +172,11 @@ export default function WatchParty({ tmdbId, mediaType, season, episode, activeS
       ts: Date.now(),
     });
     if (onSync) onSync(season, episode, activeServer);
+  }
+
+  async function handleServerChange(newServer) {
+    if (!roomCode || !isHost) return;
+    await set(ref(db, `watchParties/${roomCode}/activeServer`), newServer);
   }
 
   async function sendChat(e) {
