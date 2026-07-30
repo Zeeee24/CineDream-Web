@@ -519,8 +519,21 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         </div>
 
         <div className="player-modal-info">
-          {isTV && validSeasons.length > 0 && (
-            <div className="player-controls-row">
+          <div className="player-controls-row">
+            <div className="player-server-dropdown-wrapper">
+              <select
+                className="player-server-dropdown"
+                value={activeServer}
+                onChange={(e) => switchServer(Number(e.target.value))}
+              >
+                {allServers.map((s, i) => (
+                  <option key={s.id} value={i} disabled={health[s.id] === false}>
+                    {health[s.id] === false ? '🔴 ' : health[s.id] ? '🟢 ' : '⚪ '}{s.name}{s.label ? ` (${s.label})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {isTV && validSeasons.length > 0 && (
               <div className="player-season-episode">
                 <select
                   className="player-control-select"
@@ -558,28 +571,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                   )}
                 </select>
               </div>
-            </div>
-          )}
-
-          <div className="player-server-row">
-            <span className="player-server-row-label">Servers</span>
-            <div className="player-server-grid">
-              {allServers.map((s, i) => (
-                <button
-                  key={s.id}
-                  className={`player-server-chip ${i === activeServer ? 'active' : ''} ${health[s.id] === false ? 'offline' : ''}`}
-                  onClick={() => switchServer(i)}
-                >
-                  <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
-                  <span className="player-server-chip-name">{s.name}</span>
-                  {s.label && (
-                    <span className={`player-server-chip-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
-                      {s.label}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            )}
           </div>
 
           <div className="player-actions-row">
