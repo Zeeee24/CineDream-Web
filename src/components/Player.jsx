@@ -360,7 +360,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
   return (
     <div className="player-modal-overlay" ref={playerRef}>
-      <div className="player-modal-inner">
+      <div className="player-modal-sticky-top">
         <div className="player-modal-header">
           <button className="player-modal-close" onClick={handleClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -517,7 +517,9 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             </div>
           )}
         </div>
+      </div>
 
+      <div className="player-modal-scroll-area">
         <div className="player-modal-info">
           <div className="player-controls-row">
             <div className="player-server-dropdown-wrapper">
@@ -610,15 +612,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                 <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
               </svg>
               Watch Party
-            </button>
-            <button
-              className="player-action-pill"
-              onClick={handleClose}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-              Close
             </button>
           </div>
 
