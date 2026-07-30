@@ -86,24 +86,13 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   }, [activeTmdbId, selectedSeason, isTV, isOpen]);
 
   useEffect(() => {
-    function handleKey(e) {
-      if (e.key === 'Escape' && isOpen) onClose();
-    }
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
     } else {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
