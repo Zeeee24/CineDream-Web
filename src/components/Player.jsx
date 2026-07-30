@@ -9,13 +9,11 @@ const allServers = getServers();
 export default function Player({ imdbId, tmdbId, mediaType, season, episode, title, posterPath, backdropPath, seasons, onEpisodeChange, onClose }) {
   const [activeServer, setActiveServer] = useState(0);
   const [health, setHealth] = useState({});
-  const [showServerPanel, setShowServerPanel] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [episodesLoading, setEpisodesLoading] = useState(false);
   const [episodesSeason, setEpisodesSeason] = useState(season || 1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [controlsVisible, setControlsVisible] = useState(true);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const [showWatchParty, setShowWatchParty] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -23,8 +21,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const [watchTime, setWatchTime] = useState(0);
   const playerRef = useRef(null);
-  const viewportRef = useRef(null);
-  const hideTimerRef = useRef(null);
   const loadTimerRef = useRef(null);
   const fallbackTimerRef = useRef(null);
   const progressIntervalRef = useRef(null);
@@ -35,8 +31,12 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     : [];
 
   useEffect(() => {
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
   }, []);
 
   useEffect(() => {
@@ -59,6 +59,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [tmdbId, season, episode]);
 
   const handleClose = useCallback(() => {
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearInterval(progressIntervalRef.current);
     try {
@@ -85,7 +86,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setEpisodesSeason(newSeason);
     setLoading(true);
     setLoadError(false);
-    showControls();
   }
 
   function handlePrevEpisode() {
@@ -153,38 +153,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const canGoPrev = isTV && season > 1;
   const canGoNext = isTV && validSeasons.length > 0 && season < validSeasons[validSeasons.length - 1].season_number;
 
-  function showControls() {
-    setControlsVisible(true);
-    clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => {
-      setControlsVisible(false);
-    }, 4000);
-  }
-
-  function handlePlayerMouseMove() {
-    showControls();
-  }
-
-  function handlePlayerTouchStart() {
-    if (controlsVisible) {
-      setControlsVisible(false);
-      clearTimeout(hideTimerRef.current);
-    } else {
-      showControls();
-    }
-  }
-
-  function handleFullOverlayTap(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    showControls();
-  }
-
-  useEffect(() => {
-    showControls();
-    return () => clearTimeout(hideTimerRef.current);
-  }, []);
-
   useEffect(() => {
     checkAllServers().then((h) => {
       setHealth(h);
@@ -199,34 +167,16 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         handleClose();
         return;
       }
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        showControls();
-        if (showServerPanel) {
-          e.preventDefault();
-          setActiveServer((prev) => {
-            if (e.key === 'ArrowDown') return (prev + 1) % allServers.length;
-            return (prev - 1 + allServers.length) % allServers.length;
-          });
-        }
-      }
       if (e.key === 'ArrowLeft') {
-        showControls();
         e.preventDefault();
         switchServer((activeServer - 1 + allServers.length) % allServers.length);
       }
       if (e.key === 'ArrowRight') {
-        showControls();
         e.preventDefault();
         switchServer((activeServer + 1) % allServers.length);
       }
-      if (showServerPanel && e.key === 'Enter') {
-        setLoading(true);
-        setLoadError(false);
-        setShowServerPanel(false);
-      }
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
-        showControls();
       }
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault();
@@ -235,7 +185,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       if (e.key >= '1' && e.key <= '8') {
         const idx = parseInt(e.key) - 1;
         if (idx < allServers.length) {
-          showControls();
           switchServer(idx);
         }
       }
@@ -243,28 +192,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     document.addEventListener('keydown', handleKey);
     return () => { document.removeEventListener('keydown', handleKey); };
-  }, [handleClose, showServerPanel]);
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (showServerPanel) {
-        const panel = document.querySelector('.player-server-panel');
-        if (panel && !panel.contains(e.target)) {
-          setShowServerPanel(false);
-        }
-      }
-    }
-    if (showServerPanel) {
-      setControlsVisible(true);
-      clearTimeout(hideTimerRef.current);
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [showServerPanel]);
+  }, [handleClose, activeServer]);
 
   useEffect(() => {
     if (!isTV || !tmdbId) return;
@@ -345,8 +273,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setFallbackCountdown(null);
     clearTimeout(loadTimerRef.current);
     clearInterval(fallbackTimerRef.current);
-    setShowServerPanel(false);
-    showControls();
   }
 
   function toggleFullscreen() {
@@ -404,54 +330,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
           </div>
         </div>
 
-        <div
-          className="player-viewport"
-          ref={viewportRef}
-          onMouseMove={handlePlayerMouseMove}
-          onTouchStart={handlePlayerTouchStart}
-        >
-          <div
-            className={`player-full-overlay ${controlsVisible ? 'controls-up' : 'controls-down'}`}
-            onTouchStart={handleFullOverlayTap}
-            onClick={handleFullOverlayTap}
-          />
-
-          {showServerPanel && (
-            <div className="player-server-panel">
-              <div className="player-server-panel-header">
-                <span className="player-server-panel-drag-handle" />
-                Select Server
-              </div>
-              <div className="player-server-list">
-                {allServers.map((s, i) => (
-                  <button
-                    key={s.id}
-                    className={`player-server-item ${i === activeServer ? 'active' : ''}`}
-                    onClick={() => switchServer(i)}
-                  >
-                    <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
-                    <span className="player-server-item-name">{s.name}</span>
-                    <span className={`player-server-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
-                      {s.label}
-                    </span>
-                    {i === activeServer && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {loading && (
-            <div className="player-loading">
-              <div className="player-loading-spinner" />
-              <span>Loading from {current.name}...</span>
-            </div>
-          )}
-
+        <div className="player-viewport" ref={playerRef}>
           {showResumeBanner && resumePosition && (
             <div className="player-resume-banner glass-heavy">
               <div className="player-resume-info">
@@ -461,16 +340,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                 <span>Resume from {Math.floor(resumePosition.progressSeconds / 60)}:{String(resumePosition.progressSeconds % 60).padStart(2, '0')}</span>
               </div>
               <div className="player-resume-actions">
-                <button className="btn btn-primary" onClick={() => {
-                  setShowResumeBanner(false);
-                  showControls();
-                }}>
+                <button className="btn btn-primary" onClick={() => setShowResumeBanner(false)}>
                   Resume
                 </button>
-                <button className="btn btn-secondary" onClick={() => {
-                  setShowResumeBanner(false);
-                  showControls();
-                }}>
+                <button className="btn btn-secondary" onClick={() => setShowResumeBanner(false)}>
                   Start Over
                 </button>
               </div>
@@ -488,6 +361,13 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
             onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
             onError={() => { setLoading(false); setLoadError(true); }}
           />
+
+          {loading && (
+            <div className="player-loading">
+              <div className="player-loading-spinner" />
+              <span>Loading from {current.name}...</span>
+            </div>
+          )}
 
           {loadError && (
             <div className="player-error">
@@ -519,7 +399,10 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
         </div>
       </div>
 
-      <div className="player-modal-scroll-area">
+      <div
+        className="player-modal-scroll-area"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+      >
         <div className="player-modal-info">
           <div className="player-controls-row">
             <div className="player-server-dropdown-wrapper">
