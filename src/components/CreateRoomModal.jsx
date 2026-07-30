@@ -92,6 +92,20 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   }, [isOpen, onClose]);
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!hasInitialContent && isOpen && searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -202,7 +216,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   }
 
   return (
-    <div className="auth-modal-overlay" onClick={onClose}>
+    <div className="auth-modal-overlay" onPointerDown={onClose}>
       <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"

@@ -4295,6 +4295,8 @@ button:focus-visible,
   -webkit-backdrop-filter: blur(8px);
   padding: 16px;
   pointer-events: auto;
+  touch-action: none;
+  -ms-touch-action: none;
 }
 
 .auth-modal {
