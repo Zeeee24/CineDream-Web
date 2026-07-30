@@ -18,7 +18,7 @@ export default function WatchPage() {
   const initialEpisode = isMovie ? null : Number(searchParams.get('e')) || 1;
 
   const [data, setData] = useState(null);
-  const [activeServer, setActiveServer] = useState(0);
+  const [activeServer, setActiveServer] = useState(2);
   const [health, setHealth] = useState({});
   const [episodes, setEpisodes] = useState([]);
   const [episodesLoading, setEpisodesLoading] = useState(false);
@@ -29,6 +29,7 @@ export default function WatchPage() {
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
   const [resumePosition, setResumePosition] = useState(null);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [isHostParty, setIsHostParty] = useState(false);
   const [watchTime, setWatchTime] = useState(0);
   const [partyTimestamp, setPartyTimestamp] = useState(null);
   const playerRef = useRef(null);
@@ -354,6 +355,8 @@ export default function WatchPage() {
               className="player-server-dropdown"
               value={activeServer}
               onChange={(e) => switchServer(Number(e.target.value))}
+              disabled={!isHostParty && searchParams.get('room')}
+              title={!isHostParty && searchParams.get('room') ? 'Only the Host can change the server' : ''}
             >
               {allServers.map((s, i) => (
                 <option key={s.id} value={i} disabled={health[s.id] === false}>
@@ -406,6 +409,7 @@ export default function WatchPage() {
             activeServer={activeServer}
             onSync={(s, e, server) => { switchServer(server); }}
             onServerChange={(server) => { switchServer(server); }}
+            onIsHostChange={(host) => setIsHostParty(host)}
             onTimestampSync={(ts) => {
               clearTimeout(syncTimerRef.current);
               const elapsed = Math.floor((Date.now() - ts) / 1000);

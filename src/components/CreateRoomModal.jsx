@@ -166,7 +166,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
         mediaType: activeMediaType,
         season: isTV ? selectedSeason : null,
         episode: isTV ? selectedEpisode : null,
-        activeServer: 0,
+        activeServer: 2,
         hostTimestamp: Date.now(),
         createdAt: Date.now(),
         password: isPrivate ? password : null,

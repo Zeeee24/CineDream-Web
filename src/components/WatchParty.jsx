@@ -3,7 +3,7 @@ import { ref, set, get, onValue, push, remove, update } from 'firebase/database'
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaType, season, episode, activeServer, onSync, onServerChange, onTimestampSync }) {
+export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaType, season, episode, activeServer, onSync, onServerChange, onTimestampSync, onIsHostChange }) {
   const { user, userProfile, isLoggedIn } = useAuth();
   const [roomCode, setRoomCode] = useState(initialRoomCode || '');
   const [members, setMembers] = useState({});
@@ -21,10 +21,18 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
   const syncIntervalRef = useRef(null);
   const joinedRef = useRef(false);
 
-  const leaveRoom = useCallback(() => {
+  const leaveRoom = useCallback(async () => {
     if (roomCode && user) {
       const memRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
-      remove(memRef).catch(() => {});
+      await remove(memRef).catch(() => {});
+      const roomSnap = await get(ref(db, `watchParties/${roomCode}`)).catch(() => null);
+      if (roomSnap && roomSnap.exists()) {
+        const data = roomSnap.val();
+        const remaining = Object.keys(data.members || {}).length;
+        if (remaining === 0) {
+          await remove(ref(db, `watchParties/${roomCode}`)).catch(() => {});
+        }
+      }
     }
     setRoomCode('');
     setMembers({});
@@ -34,6 +42,16 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
     joinedRef.current = false;
     clearInterval(syncIntervalRef.current);
   }, [roomCode, user]);
+
+  useEffect(() => {
+    if (!roomCode || !user) return;
+    const handleUnload = () => { leaveRoom(); };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      leaveRoom();
+    };
+  }, [roomCode, user, leaveRoom]);
 
   useEffect(() => {
     if (!initialRoomCode || !isLoggedIn || !user) return;
