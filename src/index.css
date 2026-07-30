@@ -4285,7 +4285,7 @@ button:focus-visible,
 .auth-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 5000;
+  z-index: 99999;
   background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
@@ -4297,6 +4297,7 @@ button:focus-visible,
   pointer-events: auto;
   touch-action: none;
   -ms-touch-action: none;
+  overflow: hidden;
 }
 
 .auth-modal {
