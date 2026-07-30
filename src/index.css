@@ -5459,3 +5459,144 @@ button:focus-visible,
     justify-content: center;
   }
 }
+
+/* Create Room Modal - Search Step */
+.cr-step-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.cr-search-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.cr-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.cr-search-input {
+  width: 100%;
+  padding: 10px 32px 10px 34px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.cr-search-input:focus {
+  border-color: var(--accent);
+}
+
+.cr-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cr-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.cr-search-clear:hover {
+  color: var(--text-primary);
+}
+
+.cr-search-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cr-search-results {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: #0d0d0d;
+}
+
+.cr-search-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+
+.cr-search-result:last-child {
+  border-bottom: none;
+}
+
+.cr-search-result:hover {
+  background: #1a1a1a;
+}
+
+.cr-search-poster {
+  width: 36px;
+  height: 54px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #222;
+}
+
+.cr-search-poster-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cr-search-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cr-search-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cr-search-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.cr-search-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  padding: 20px;
+}

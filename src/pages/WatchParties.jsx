@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ref, get } from 'firebase/database';
+import { ref, get, remove } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { img } from '../services/tmdb';
@@ -26,24 +26,36 @@ export default function WatchParties() {
         }
         const data = snap.val();
         const now = Date.now();
-        const active = Object.entries(data)
-          .filter(([, room]) => {
-            const members = Object.keys(room.members || {}).length;
-            const age = now - (room.createdAt || 0);
-            return members > 0 && age < 86400000;
-          })
-          .map(([code, room]) => ({
-            code,
-            title: room.title || 'Untitled',
-            posterPath: room.posterPath || null,
-            mediaType: room.mediaType || 'movie',
-            tmdbId: room.tmdbId,
-            hostName: room.hostName || 'Unknown',
-            memberCount: Object.keys(room.members || {}).length,
-            hasPassword: !!room.password,
-            createdAt: room.createdAt || 0,
-          }))
-          .sort((a, b) => b.createdAt - a.createdAt);
+        const active = [];
+        const staleCodes = [];
+
+        Object.entries(data).forEach(([code, room]) => {
+          const memberCount = Object.keys(room.members || {}).length;
+          const age = now - (room.createdAt || 0);
+          if (memberCount === 0) {
+            staleCodes.push(code);
+          } else if (age < 86400000) {
+            active.push({
+              code,
+              title: room.title || 'Untitled',
+              posterPath: room.posterPath || null,
+              mediaType: room.mediaType || 'movie',
+              tmdbId: room.tmdbId,
+              hostName: room.hostName || 'Unknown',
+              memberCount,
+              hasPassword: !!room.password,
+              createdAt: room.createdAt || 0,
+            });
+          } else {
+            staleCodes.push(code);
+          }
+        });
+
+        staleCodes.forEach((code) => {
+          remove(ref(db, `watchParties/${code}`)).catch(() => {});
+        });
+
+        active.sort((a, b) => b.createdAt - a.createdAt);
         setRooms(active);
       } catch (err) {
         console.error('Failed to load rooms:', err);
@@ -54,8 +66,6 @@ export default function WatchParties() {
     loadRooms();
     return () => { cancelled = true; };
   }, []);
-
-  const posterPath = null;
 
   return (
     <div className="wp-lobby-page">
@@ -104,13 +114,13 @@ export default function WatchParties() {
             <div
               key={room.code}
               className="wp-lobby-card"
-              onClick={() => navigate(`/${room.mediaType}/${room.tmdbId}?room=${room.code}`)}
+              onClick={() => navigate(`/watch/${room.mediaType}/${room.tmdbId}?room=${room.code}`)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate(`/${room.mediaType}/${room.tmdbId}?room=${room.code}`);
+                  navigate(`/watch/${room.mediaType}/${room.tmdbId}?room=${room.code}`);
                 }
               }}
             >
