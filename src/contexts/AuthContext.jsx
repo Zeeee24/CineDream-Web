@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -20,11 +20,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [redirectPending, setRedirectPending] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
+        setRedirectPending(false);
         const profileRef = ref(db, `users/${firebaseUser.uid}/profile`);
         const snap = await get(profileRef);
         if (snap.exists()) {
@@ -52,18 +54,37 @@ export function AuthProvider({ children }) {
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          console.log('Redirect sign-in result:', result.user);
+          setRedirectPending(false);
         }
       })
       .catch((err) => {
-        console.warn('Redirect result error:', err);
+        setRedirectPending(false);
+        const code = err?.code || '';
+        if (code === 'auth/unauthorized-domain') {
+          console.warn('Redirect auth: Domain not authorized. Add this domain to Firebase Console → Authentication → Settings → Authorized domains.');
+        } else if (code === 'auth/operation-not-allowed') {
+          console.warn('Redirect auth: Google sign-in is not enabled in Firebase Console.');
+        } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+          console.warn('Redirect result error:', err);
+        }
       });
   }, []);
 
-  async function signInWithGoogle() {
-    const resultUser = await handleGoogleSignIn(auth, googleProvider);
-    return resultUser;
-  }
+  const signInWithGoogle = useCallback(async () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      setRedirectPending(true);
+      try {
+        await handleGoogleSignIn(auth, googleProvider);
+      } catch (err) {
+        setRedirectPending(false);
+        throw err;
+      }
+    } else {
+      const resultUser = await handleGoogleSignIn(auth, googleProvider);
+      return resultUser;
+    }
+  }, []);
 
   async function signInWithEmail(email, password) {
     const result = await signInWithEmailAndPassword(auth, email, password);
@@ -103,6 +124,7 @@ export function AuthProvider({ children }) {
     signInWithEmail,
     signUpWithEmail,
     logOut,
+    redirectPending,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

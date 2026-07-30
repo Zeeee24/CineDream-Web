@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, browserLocalPersistence, setPersistence } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
@@ -17,9 +17,17 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getDatabase(app);
 
+auth.useDeviceLanguage();
+
+export function isMobileDevice() {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth < 768);
+}
+
 export async function handleGoogleSignIn(authObj, provider) {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile) {
+  if (isMobileDevice()) {
+    try {
+      await setPersistence(authObj, browserLocalPersistence);
+    } catch (_) {}
     await signInWithRedirect(authObj, provider);
     return null;
   }

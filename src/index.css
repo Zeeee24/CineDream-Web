@@ -2095,6 +2095,153 @@ img {
   cursor: not-allowed;
 }
 
+/* === Cineby.at Style: Controls Row === */
+.player-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.player-controls-row .player-season-episode {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+}
+
+/* === Cineby.at Style: Server Grid === */
+.player-server-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.player-server-row-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.player-server-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.player-server-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 48px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-server-chip:active {
+  transform: scale(0.96);
+}
+
+.player-server-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.player-server-chip.active {
+  background: rgba(229, 9, 20, 0.12);
+  border-color: var(--accent);
+  color: white;
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.15);
+}
+
+.player-server-chip.offline {
+  opacity: 0.4;
+}
+
+.player-server-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-server-chip-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.player-server-chip-badge.hd {
+  background: rgba(70, 211, 105, 0.15);
+  color: #46d369;
+}
+
+.player-server-chip-badge.vip {
+  background: rgba(229, 9, 20, 0.15);
+  color: #ff6b6b;
+}
+
+/* === Cineby.at Style: Actions Row === */
+.player-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.player-action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-action-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.player-action-pill:active {
+  transform: scale(0.97);
+}
+
+.player-action-pill.active {
+  background: rgba(229, 9, 20, 0.12);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
 /* ========== PLAYER RESPONSIVE: MOBILE (< 768px) ========== */
 @media (max-width: 767px) {
   .player-modal-inner {
@@ -2133,6 +2280,35 @@ img {
   .player-season-episode {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .player-server-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .player-server-chip {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+    min-height: 44px;
+    gap: 4px;
+  }
+
+  .player-server-chip-badge {
+    font-size: 0.5rem;
+    padding: 1px 3px;
+  }
+
+  .player-actions-row {
+    gap: 6px;
+  }
+
+  .player-action-pill {
+    padding: 12px 14px;
+    font-size: 0.78rem;
+    gap: 6px;
+    flex: 1 1 calc(50% - 3px);
+    min-width: 0;
   }
 
   .player-action-buttons {
@@ -2216,6 +2392,23 @@ img {
     border-radius: 8px;
     gap: 8px;
   }
+
+  .player-server-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .player-server-chip {
+    padding: 12px 10px;
+    font-size: 0.82rem;
+    min-height: 48px;
+  }
+
+  .player-action-pill {
+    padding: 14px 18px;
+    font-size: 0.85rem;
+    flex: 1 1 auto;
+  }
 }
 
 /* ========== PLAYER RESPONSIVE: LAPTOP (769px - 1199px) ========== */
@@ -2281,6 +2474,23 @@ img {
     border-radius: 8px;
     min-height: 40px;
     gap: 8px;
+  }
+
+  .player-server-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .player-server-chip {
+    padding: 12px 10px;
+    font-size: 0.82rem;
+    min-height: 48px;
+  }
+
+  .player-action-pill {
+    padding: 14px 18px;
+    font-size: 0.85rem;
+    flex: 1 1 auto;
   }
 }
 
@@ -2352,6 +2562,22 @@ img {
     border-radius: 8px;
     min-height: 42px;
   }
+
+  .player-server-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .player-server-chip {
+    padding: 14px 12px;
+    font-size: 0.85rem;
+    min-height: 52px;
+  }
+
+  .player-action-pill {
+    padding: 16px 24px;
+    font-size: 0.88rem;
+  }
 }
 
 /* ========== PLAYER RESPONSIVE: LARGE SCREENS (1440px+) ========== */
@@ -2364,6 +2590,17 @@ img {
     position: absolute;
     right: 32px;
     width: 320px;
+  }
+
+  .player-server-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .player-server-chip {
+    padding: 16px 14px;
+    font-size: 0.88rem;
+    min-height: 56px;
   }
 }
 
@@ -2403,6 +2640,28 @@ img {
   .player-server-item {
     padding: 8px 8px;
     min-height: 48px;
+  }
+
+  .player-server-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+
+  .player-server-chip {
+    padding: 8px 4px;
+    font-size: 0.7rem;
+    min-height: 40px;
+  }
+
+  .player-server-chip-badge {
+    font-size: 0.45rem;
+    padding: 1px 2px;
+  }
+
+  .player-action-pill {
+    padding: 10px 10px;
+    font-size: 0.72rem;
+    flex: 1 1 calc(50% - 2px);
   }
 }
 

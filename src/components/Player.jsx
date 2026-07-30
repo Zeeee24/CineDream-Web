@@ -449,64 +449,71 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
         <div className="player-modal-info">
           {isTV && validSeasons.length > 0 && (
-            <div className="player-season-episode">
-              <select
-                className="player-control-select"
-                value={episodesSeason}
-                onChange={(e) => {
-                  const newSeason = Number(e.target.value);
-                  setEpisodesSeason(newSeason);
-                  if (onEpisodeChange) onEpisodeChange(newSeason, 1);
-                }}
-              >
-                {validSeasons.map((s) => (
-                  <option key={s.id} value={s.season_number}>
-                    Season {s.season_number}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="player-control-select"
-                value={episode || 1}
-                onChange={(e) => {
-                  const newEpisode = Number(e.target.value);
-                  if (onEpisodeChange) onEpisodeChange(episodesSeason, newEpisode);
-                }}
-              >
-                {episodesLoading ? (
-                  <option value={episode || 1}>Loading...</option>
-                ) : episodes.length > 0 ? (
-                  episodes.map((ep) => (
-                    <option key={ep.id} value={ep.episode_number}>
-                      E{ep.episode_number} — {ep.name || `Episode ${ep.episode_number}`}
+            <div className="player-controls-row">
+              <div className="player-season-episode">
+                <select
+                  className="player-control-select"
+                  value={episodesSeason}
+                  onChange={(e) => {
+                    const newSeason = Number(e.target.value);
+                    setEpisodesSeason(newSeason);
+                    if (onEpisodeChange) onEpisodeChange(newSeason, 1);
+                  }}
+                >
+                  {validSeasons.map((s) => (
+                    <option key={s.id} value={s.season_number}>
+                      Season {s.season_number}
                     </option>
-                  ))
-                ) : (
-                  <option value={1}>Episode 1</option>
-                )}
-              </select>
+                  ))}
+                </select>
+                <select
+                  className="player-control-select"
+                  value={episode || 1}
+                  onChange={(e) => {
+                    const newEpisode = Number(e.target.value);
+                    if (onEpisodeChange) onEpisodeChange(episodesSeason, newEpisode);
+                  }}
+                >
+                  {episodesLoading ? (
+                    <option value={episode || 1}>Loading...</option>
+                  ) : episodes.length > 0 ? (
+                    episodes.map((ep) => (
+                      <option key={ep.id} value={ep.episode_number}>
+                        E{ep.episode_number} — {ep.name || `Episode ${ep.episode_number}`}
+                      </option>
+                    ))
+                  ) : (
+                    <option value={1}>Episode 1</option>
+                  )}
+                </select>
+              </div>
             </div>
           )}
 
-          <div className="player-server-tabs">
-            {allServers.map((s, i) => (
-              <button
-                key={s.id}
-                className={`player-server-tab ${i === activeServer ? 'active' : ''}`}
-                onClick={() => switchServer(i)}
-              >
-                <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
-                <span className="player-server-tab-name">{s.name}</span>
-                <span className={`player-server-tab-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
-                  {s.label}
-                </span>
-              </button>
-            ))}
+          <div className="player-server-row">
+            <span className="player-server-row-label">Servers</span>
+            <div className="player-server-grid">
+              {allServers.map((s, i) => (
+                <button
+                  key={s.id}
+                  className={`player-server-chip ${i === activeServer ? 'active' : ''} ${health[s.id] === false ? 'offline' : ''}`}
+                  onClick={() => switchServer(i)}
+                >
+                  <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
+                  <span className="player-server-chip-name">{s.name}</span>
+                  {s.label && (
+                    <span className={`player-server-chip-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
+                      {s.label}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="player-action-buttons">
+          <div className="player-actions-row">
             <button
-              className="player-action-btn"
+              className="player-action-pill"
               onClick={() => {
                 const url = window.location.href;
                 if (navigator.share) {
@@ -523,16 +530,16 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               Share
             </button>
             <button
-              className={`player-action-btn ${isFullscreen ? 'active' : ''}`}
+              className={`player-action-pill ${isFullscreen ? 'active' : ''}`}
               onClick={toggleFullscreen}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
               </svg>
-              {isFullscreen ? 'Exit' : 'Fullscreen'}
+              {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
             </button>
             <button
-              className={`player-action-btn ${showWatchParty ? 'active' : ''}`}
+              className={`player-action-pill ${showWatchParty ? 'active' : ''}`}
               onClick={() => setShowWatchParty(!showWatchParty)}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -542,7 +549,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
               Watch Party
             </button>
             <button
-              className="player-action-btn"
+              className="player-action-pill"
               onClick={handleClose}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
