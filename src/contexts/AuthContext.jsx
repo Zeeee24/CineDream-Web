@@ -1,14 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
   onAuthStateChanged,
-  signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import { ref, set, get } from 'firebase/database';
-import { auth, googleProvider, db } from '../config/firebase';
+import { auth, googleProvider, db, handleGoogleSignIn, getRedirectResult } from '../config/firebase';
 import { syncLocalStorageToCloud } from '../services/cloudSync';
 
 const AuthContext = createContext(null);
@@ -49,9 +48,21 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Redirect sign-in result:', result.user);
+        }
+      })
+      .catch((err) => {
+        console.warn('Redirect result error:', err);
+      });
+  }, []);
+
   async function signInWithGoogle() {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    const resultUser = await handleGoogleSignIn(auth, googleProvider);
+    return resultUser;
   }
 
   async function signInWithEmail(email, password) {

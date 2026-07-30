@@ -1,6 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const ERROR_MESSAGES = {
+  'auth/operation-not-allowed': 'Email/Password sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+  'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+  'auth/popup-blocked': 'Popup was blocked by your browser. Try signing in with email instead.',
+  'auth/popup-closed-by-user': 'Sign-in popup was closed before completing.',
+  'auth/invalid-credential': 'Invalid email or password.',
+  'auth/user-not-found': 'No account found with this email.',
+  'auth/wrong-password': 'Incorrect password. Please try again.',
+  'auth/email-already-in-use': 'An account with this email already exists.',
+  'auth/weak-password': 'Password must be at least 6 characters.',
+  'auth/invalid-email': 'Please enter a valid email address.',
+  'auth/too-many-requests': 'Too many attempts. Please try again later.',
+  'auth/network-request-failed': 'Network error. Check your connection and try again.',
+  'auth/popup-sign-in-cancelled': 'Sign-in was cancelled.',
+};
+
+function formatError(error) {
+  if (!error) return 'Something went wrong. Please try again.';
+  const code = error.code || '';
+  if (ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
+  const clean = code.replace('auth/', '').replace(/-/g, ' ');
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
 export default function AuthModal({ isOpen, onClose }) {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -48,7 +72,7 @@ export default function AuthModal({ isOpen, onClose }) {
       await signInWithGoogle();
       onClose();
     } catch (e) {
-      setError(e.message || 'Google sign-in failed');
+      setError(formatError(e));
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +90,7 @@ export default function AuthModal({ isOpen, onClose }) {
       }
       onClose();
     } catch (e) {
-      setError(e.code?.replace('auth/', '').replace(/-/g, ' ') || e.message || 'Failed');
+      setError(formatError(e));
     } finally {
       setSubmitting(false);
     }

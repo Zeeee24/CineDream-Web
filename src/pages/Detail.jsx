@@ -280,21 +280,19 @@ export default function Detail() {
         </div>
 
         {showPlayer && (imdbId || id) && (
-          <div className="player-container">
-            <Player
-              imdbId={imdbId}
-              tmdbId={id}
-              mediaType={type}
-              season={!isMovie ? selectedSeason : undefined}
-              episode={!isMovie ? selectedEpisode : undefined}
-              title={title}
-              posterPath={data.poster_path}
-              backdropPath={data.backdrop_path}
-              seasons={!isMovie ? seasons : undefined}
-              onEpisodeChange={!isMovie ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
-              onClose={() => setShowPlayer(false)}
-            />
-          </div>
+          <Player
+            imdbId={imdbId}
+            tmdbId={id}
+            mediaType={type}
+            season={!isMovie ? selectedSeason : undefined}
+            episode={!isMovie ? selectedEpisode : undefined}
+            title={title}
+            posterPath={data.poster_path}
+            backdropPath={data.backdrop_path}
+            seasons={!isMovie ? seasons : undefined}
+            onEpisodeChange={!isMovie ? (s, e) => { setSelectedSeason(s); setSelectedEpisode(e); } : undefined}
+            onClose={() => setShowPlayer(false)}
+          />
         )}
 
         {!isMovie && seasons.length > 0 && (

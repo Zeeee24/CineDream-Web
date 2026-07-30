@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getServers, getEmbedUrl, checkAllServers } from '../services/servers';
-import { getTVSeason, img } from '../services/tmdb';
+import { getTVSeason } from '../services/tmdb';
 import { addToHistory } from '../services/watchHistory';
 import WatchParty from './WatchParty';
 
@@ -17,6 +17,8 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const [loadError, setLoadError] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [fallbackCountdown, setFallbackCountdown] = useState(null);
+  const [showWatchParty, setShowWatchParty] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const playerRef = useRef(null);
   const viewportRef = useRef(null);
   const hideTimerRef = useRef(null);
@@ -24,12 +26,17 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   const fallbackTimerRef = useRef(null);
 
   const isTV = mediaType === 'tv';
-  const validSeasons = (seasons && seasons.length > 0) 
+  const validSeasons = (seasons && seasons.length > 0)
     ? seasons.filter((s) => s.season_number > 0)
     : [];
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   const handleClose = useCallback(() => {
+    document.body.style.overflow = '';
     try {
       addToHistory({
         tmdbId: Number(tmdbId),
@@ -49,7 +56,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [tmdbId, title, posterPath, backdropPath, isTV, season, episode, onClose]);
 
   function goToEpisode(newSeason, newEpisode) {
-    console.log('goToEpisode called with:', newSeason, newEpisode);
     if (onEpisodeChange) onEpisodeChange(newSeason, newEpisode);
     setEpisodesSeason(newSeason);
     setLoading(true);
@@ -126,7 +132,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     setControlsVisible(true);
     clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      if (!showServerPanel) setControlsVisible(false);
+      setControlsVisible(false);
     }, 4000);
   }
 
@@ -135,7 +141,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }
 
   function handlePlayerTouchStart() {
-    if (showServerPanel) return;
     if (controlsVisible) {
       setControlsVisible(false);
       clearTimeout(hideTimerRef.current);
@@ -153,7 +158,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   useEffect(() => {
     showControls();
     return () => clearTimeout(hideTimerRef.current);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     checkAllServers().then((h) => {
@@ -166,8 +171,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
 
     function handleKey(e) {
       if (e.key === 'Escape') {
-        if (showServerPanel) setShowServerPanel(false);
-        else handleClose();
+        handleClose();
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -192,15 +196,11 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     }
 
     document.addEventListener('keydown', handleKey);
-
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [handleClose, showServerPanel]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { document.removeEventListener('keydown', handleKey); };
+  }, [handleClose, showServerPanel]);
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (e.target.closest('.player-topbar-btn')) return;
       if (showServerPanel) {
         const panel = document.querySelector('.player-server-panel');
         if (panel && !panel.contains(e.target)) {
@@ -209,7 +209,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
       }
     }
     if (showServerPanel) {
-      setControlsVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
+      setControlsVisible(true);
       clearTimeout(hideTimerRef.current);
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
@@ -240,7 +240,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
   }, [tmdbId, episodesSeason, isTV]);
 
   useEffect(() => {
-    if (season) setEpisodesSeason(season); // eslint-disable-line react-hooks/set-state-in-effect
+    if (season) setEpisodesSeason(season);
   }, [season]);
 
   useEffect(() => {
@@ -252,7 +252,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     }
   }, [season, episode, isTV]);
 
-  // Load timeout: if loading persists >15s, treat as failure
   useEffect(() => {
     if (loading) {
       clearTimeout(loadTimerRef.current);
@@ -266,7 +265,6 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     return () => clearTimeout(loadTimerRef.current);
   }, [loading, activeServer]);
 
-  // Auto-fallback: when loadError is true, countdown 5s then switch server
   useEffect(() => {
     if (loadError) {
       setFallbackCountdown(5);
@@ -287,7 +285,7 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     return () => {
       clearInterval(fallbackTimerRef.current);
     };
-  }, [loadError]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadError]);
 
   if (!imdbId && !tmdbId) return null;
 
@@ -305,142 +303,153 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
     showControls();
   }
 
+  function toggleFullscreen() {
+    if (!playerRef.current) return;
+    if (!document.fullscreenElement) {
+      playerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }
+
   return (
-    <div
-      className="player-section"
-      ref={playerRef}
-      onMouseMove={handlePlayerMouseMove}
-    >
-        <div
-          className="player-viewport"
-          ref={viewportRef}
-          onTouchStart={handlePlayerTouchStart}
-        >
-        <div className={`player-topbar ${controlsVisible ? 'visible' : 'hidden'}`}>
-          <button className="player-topbar-btn" onClick={onClose} aria-label="Close">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <div className="player-modal-overlay" ref={playerRef}>
+      <div className="player-modal-inner">
+        <div className="player-modal-header">
+          <button className="player-modal-close" onClick={handleClose} aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="player-topbar-title">
+          <div className="player-modal-title">
             {title || 'Now Playing'}
-            {isTV && <span className="player-topbar-episode"> S{season}E{episode}</span>}
+            {isTV && <span className="player-modal-episode">S{season}E{episode}</span>}
           </div>
-          {isTV && (
-            <button
-              className="player-topbar-btn"
-              onClick={handlePrevEpisode}
-              disabled={!canGoPrev}
-              aria-label="Previous episode"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="19 20 9 12 19 4 19 20" /><line x1="5" y1="19" x2="5" y2="5" />
+          <div className="player-modal-header-right">
+            {isTV && (
+              <button
+                className="player-modal-nav-btn"
+                onClick={handlePrevEpisode}
+                disabled={!canGoPrev}
+                aria-label="Previous episode"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="19 20 9 12 19 4 19 20" /><line x1="5" y1="19" x2="5" y2="5" />
+                </svg>
+              </button>
+            )}
+            {isTV && (
+              <button
+                className="player-modal-nav-btn"
+                onClick={handleNextEpisode}
+                disabled={!canGoNext}
+                aria-label="Next episode"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
+                </svg>
+              </button>
+            )}
+            <button className="player-modal-close player-modal-close-desktop" onClick={handleClose} aria-label="Close player">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
-          )}
-          {isTV && (
-            <button
-              className="player-topbar-btn"
-              onClick={handleNextEpisode}
-              disabled={!canGoNext}
-              aria-label="Next episode"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
-              </svg>
-            </button>
-          )}
-          <div style={{ flex: 1 }} />
+          </div>
         </div>
 
         <div
-          className={`player-full-overlay ${controlsVisible ? 'controls-up' : 'controls-down'}`}
-          onTouchStart={handleFullOverlayTap}
-          onClick={handleFullOverlayTap}
-        />
+          className="player-viewport"
+          ref={viewportRef}
+          onMouseMove={handlePlayerMouseMove}
+          onTouchStart={handlePlayerTouchStart}
+        >
+          <div
+            className={`player-full-overlay ${controlsVisible ? 'controls-up' : 'controls-down'}`}
+            onTouchStart={handleFullOverlayTap}
+            onClick={handleFullOverlayTap}
+          />
 
-        {showServerPanel && (
-          <div className="player-server-panel">
-            <div className="player-server-panel-header">
-              <span className="player-server-panel-drag-handle" />
-              Select Server
+          {showServerPanel && (
+            <div className="player-server-panel">
+              <div className="player-server-panel-header">
+                <span className="player-server-panel-drag-handle" />
+                Select Server
+              </div>
+              <div className="player-server-list">
+                {allServers.map((s, i) => (
+                  <button
+                    key={s.id}
+                    className={`player-server-item ${i === activeServer ? 'active' : ''}`}
+                    onClick={() => switchServer(i)}
+                  >
+                    <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
+                    <span className="player-server-item-name">{s.name}</span>
+                    <span className={`player-server-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
+                      {s.label}
+                    </span>
+                    {i === activeServer && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="player-server-list">
-              {allServers.map((s, i) => (
-                <button
-                  key={s.id}
-                  className={`player-server-item ${i === activeServer ? 'active' : ''}`}
-                  onClick={() => switchServer(i)}
-                >
-                  <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
-                  <span className="player-server-item-name">{s.name}</span>
-                  <span className={`player-server-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
-                    {s.label}
-                  </span>
-                  {i === activeServer && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </button>
-              ))}
+          )}
+
+          {loading && (
+            <div className="player-loading">
+              <div className="player-loading-spinner" />
+              <span>Loading from {current.name}...</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {loading && (
-          <div className="player-loading">
-            <div className="player-loading-spinner" />
-            <span>Loading from {current.name}...</span>
-          </div>
-        )}
-        
-        <iframe
-          key={`${activeServer}-${tmdbId}-${season}-${episode}`}
-          src={embedUrl}
-          title={title || 'Player'}
-          allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
-          referrerPolicy="origin"
-          className="player-iframe"
-          onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
-          onError={() => { setLoading(false); setLoadError(true); }}
-        />
+          <iframe
+            key={`${activeServer}-${tmdbId}-${season}-${episode}`}
+            src={embedUrl}
+            title={title || 'Player'}
+            allowFullScreen
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerPolicy="origin"
+            className="player-iframe"
+            onLoad={() => { setLoading(false); setLoadError(false); setFallbackCountdown(null); clearInterval(fallbackTimerRef.current); clearTimeout(loadTimerRef.current); }}
+            onError={() => { setLoading(false); setLoadError(true); }}
+          />
 
-        {loadError && (
-          <div className="player-error">
-            <p>Failed to load from {current.name}</p>
-            {fallbackCountdown !== null && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
-                Switching to next server in {fallbackCountdown}s
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={() => {
-                clearInterval(fallbackTimerRef.current);
-                setFallbackCountdown(null);
-                switchServer((activeServer + 1) % allServers.length);
-              }}>
-                Try Next Server
-              </button>
+          {loadError && (
+            <div className="player-error">
+              <p>Failed to load from {current.name}</p>
               {fallbackCountdown !== null && (
-                <button className="btn btn-secondary" onClick={() => {
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Switching to next server in {fallbackCountdown}s
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button className="btn btn-primary" onClick={() => {
                   clearInterval(fallbackTimerRef.current);
                   setFallbackCountdown(null);
+                  switchServer((activeServer + 1) % allServers.length);
                 }}>
-                  Cancel
+                  Try Next Server
                 </button>
-              )}
+                {fallbackCountdown !== null && (
+                  <button className="btn btn-secondary" onClick={() => {
+                    clearInterval(fallbackTimerRef.current);
+                    setFallbackCountdown(null);
+                  }}>
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Under-player control bar */}
-      <div className="player-controls-bar">
-        <div className="player-controls-left">
+        <div className="player-modal-info">
           {isTV && validSeasons.length > 0 && (
-            <>
+            <div className="player-season-episode">
               <select
                 className="player-control-select"
                 value={episodesSeason}
@@ -476,35 +485,85 @@ export default function Player({ imdbId, tmdbId, mediaType, season, episode, tit
                   <option value={1}>Episode 1</option>
                 )}
               </select>
-            </>
+            </div>
+          )}
+
+          <div className="player-server-tabs">
+            {allServers.map((s, i) => (
+              <button
+                key={s.id}
+                className={`player-server-tab ${i === activeServer ? 'active' : ''}`}
+                onClick={() => switchServer(i)}
+              >
+                <span className={`player-server-status ${health[s.id] ? 'online' : health[s.id] === false ? 'offline' : ''}`} />
+                <span className="player-server-tab-name">{s.name}</span>
+                <span className={`player-server-tab-badge ${s.label === 'HD' ? 'hd' : s.label === 'VIP' ? 'vip' : ''}`}>
+                  {s.label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="player-action-buttons">
+            <button
+              className="player-action-btn"
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title, url }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(url).catch(() => {});
+                }
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Share
+            </button>
+            <button
+              className={`player-action-btn ${isFullscreen ? 'active' : ''}`}
+              onClick={toggleFullscreen}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+              </svg>
+              {isFullscreen ? 'Exit' : 'Fullscreen'}
+            </button>
+            <button
+              className={`player-action-btn ${showWatchParty ? 'active' : ''}`}
+              onClick={() => setShowWatchParty(!showWatchParty)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
+              Watch Party
+            </button>
+            <button
+              className="player-action-btn"
+              onClick={handleClose}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+              Close
+            </button>
+          </div>
+
+          {showWatchParty && (
+            <WatchParty
+              tmdbId={tmdbId}
+              mediaType={mediaType}
+              season={season}
+              episode={episode}
+              activeServer={activeServer}
+              onSync={(s, e, server) => { switchServer(server); }}
+            />
           )}
         </div>
-        <div className="player-controls-right">
-          <button
-            className="player-control-btn server-toggle"
-            onClick={() => { setShowServerPanel(!showServerPanel); }}
-            aria-label="Servers"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-              <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-              <line x1="6" y1="6" x2="6.01" y2="6" />
-              <line x1="6" y1="18" x2="6.01" y2="18" />
-            </svg>
-            <span>Servers</span>
-            <span className="player-control-server-badge">{current?.name?.split(' — ')[1] || current?.name || 'S1'}</span>
-          </button>
-        </div>
       </div>
-
-      <WatchParty
-        tmdbId={tmdbId}
-        mediaType={mediaType}
-        season={season}
-        episode={episode}
-        activeServer={activeServer}
-        onSync={(s, e, server) => { switchServer(server); }}
-      />
     </div>
   );
 }
