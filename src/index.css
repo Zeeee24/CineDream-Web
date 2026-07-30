@@ -1868,6 +1868,8 @@ img {
 .player-modal-overlay {
   position: fixed;
   inset: 0;
+  height: 100%;
+  width: 100%;
   z-index: 3000;
   background: rgba(0, 0, 0, 0.94);
   display: flex;
@@ -1884,10 +1886,12 @@ img {
 .player-modal-inner {
   width: 100%;
   max-width: 1100px;
+  min-height: 100%;
   padding: 16px 24px 40px;
   display: flex;
   flex-direction: column;
   gap: 0;
+  margin: 0 auto;
 }
 
 /* === Modal Header === */
