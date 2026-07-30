@@ -346,7 +346,7 @@ export default function WatchPage() {
             >
               {allServers.map((s, i) => (
                 <option key={s.id} value={i} disabled={health[s.id] === false}>
-                  {health[s.id] === false ? '🔴 ' : health[s.id] ? '🟢 ' : '⚪ '}{s.name}{s.label ? ` (${s.label})` : ''}
+                  {s.name}
                 </option>
               ))}
             </select>

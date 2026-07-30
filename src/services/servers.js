@@ -1,8 +1,7 @@
 const servers = [
   {
     id: 'vidlink',
-    name: 'Server 1 — VidLink',
-    label: 'Clean HD',
+    name: '1. VidLink',
     movie: (id) => `https://vidlink.pro/movie/${id}?primaryColor=e50914&secondaryColor=141414`,
     tv: (id, season, episode) => `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=e50914&secondaryColor=141414`,
     healthCheck: 'https://vidlink.pro',
@@ -10,8 +9,7 @@ const servers = [
   },
   {
     id: 'vidsrc-to',
-    name: 'Server 2 — VidSrc.to',
-    label: 'HD',
+    name: '2. VidSrc.to',
     movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
     tv: (id, season, episode) => `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
     healthCheck: 'https://vidsrc.to',
@@ -19,8 +17,7 @@ const servers = [
   },
   {
     id: 'videasy',
-    name: 'Server 3 — Videasy',
-    label: 'HD',
+    name: '3. Videasy',
     movie: (id) => `https://player.videasy.net/movie/${id}`,
     tv: (id, season, episode) => `https://player.videasy.net/tv/${id}/${season}/${episode}`,
     healthCheck: 'https://player.videasy.net',
@@ -28,8 +25,7 @@ const servers = [
   },
   {
     id: '111movies',
-    name: 'Server 4 — 111Movies',
-    label: 'Fast',
+    name: '4. 111Movies',
     movie: (id) => `https://111movies.com/movie/${id}`,
     tv: (id, season, episode) => `https://111movies.com/tv/${id}/${season}/${episode}`,
     healthCheck: 'https://111movies.com',
@@ -37,8 +33,7 @@ const servers = [
   },
   {
     id: 'autoembed',
-    name: 'Server 5 — AutoEmbed',
-    label: 'Backup',
+    name: '5. AutoEmbed',
     movie: (id) => `https://player.autoembed.cc/embed/movie/${id}`,
     tv: (id, season, episode) => `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`,
     healthCheck: 'https://player.autoembed.cc',
