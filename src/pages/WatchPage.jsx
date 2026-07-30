@@ -10,7 +10,7 @@ const allServers = getServers();
 export default function WatchPage() {
   const { type, id } = useParams();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const isMovie = type === 'movie';
 
@@ -43,6 +43,19 @@ export default function WatchPage() {
   const validSeasons = (data?.seasons && data.seasons.length > 0)
     ? data.seasons.filter((s) => s.season_number > 0)
     : [];
+
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!playerRef.current) return;
+    if (!document.fullscreenElement) {
+      playerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -125,15 +138,6 @@ export default function WatchPage() {
   }, [id, episodesSeason, isMovie]);
 
   useEffect(() => {
-    if (isMovie && season && episode) {
-      setLoading(true);
-      setLoadError(false);
-      setFallbackCountdown(null);
-      clearTimeout(fallbackTimerRef.current);
-    }
-  }, [season, episode, isMovie]);
-
-  useEffect(() => {
     if (loading) {
       clearTimeout(loadTimerRef.current);
       loadTimerRef.current = setTimeout(() => {
@@ -204,19 +208,6 @@ export default function WatchPage() {
     return () => document.removeEventListener('keydown', handleKey);
   }, [handleBack, toggleFullscreen]);
 
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!playerRef.current) return;
-    if (!document.fullscreenElement) {
-      playerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-    }
-  }, []);
-
   function switchServer(index) {
     setActiveServer(index);
     setLoading(true);
@@ -232,7 +223,7 @@ export default function WatchPage() {
     setLoading(true);
     setLoadError(false);
     setFallbackCountdown(null);
-    clearTimeout(fallbackTimerRef.current);
+    clearTimeout(loadTimerRef.current);
     clearInterval(fallbackTimerRef.current);
     const params = new URLSearchParams();
     params.set('s', String(newSeason));
@@ -269,7 +260,7 @@ export default function WatchPage() {
           <div className="watch-header-meta">
             {year && <span>{year}</span>}
             {rating && <span>{rating}</span>}
-            {isMovie && season && episode && (
+            {!isMovie && season && episode && (
               <span>S{season}E{episode}</span>
             )}
           </div>
@@ -361,7 +352,7 @@ export default function WatchPage() {
               ))}
             </select>
           </div>
-          {isMovie && validSeasons.length > 0 && (
+          {!isMovie && validSeasons.length > 0 && (
             <div className="player-season-episode">
               <select
                 className="player-control-select"
