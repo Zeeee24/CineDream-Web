@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component {
   };
 
   handleGoHome = () => {
-    window.location.href = '/CineDream-Web/#/';
+    window.location.href = '/CineDream-Web/';
   };
 
   render() {

@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CineDream</title>
     <script>
-      // HashRouter: any direct navigation that misses just redirects to root.
-      // The hash fragment (e.g. #/watch/movie/550) is preserved by the browser.
-      var l = window.location;
-      l.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + '/CineDream-Web/' + l.hash);
+      window.location.replace('/CineDream-Web/');
     </script>
   </head>
   <body></body>
