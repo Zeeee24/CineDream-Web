@@ -40,7 +40,6 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   const [password, setPassword] = useState('');
   const [creating, setCreating] = useState(false);
   const [mediaLoading, setMediaLoading] = useState(false);
-  const overlayRef = useRef(null);
   const searchInputRef = useRef(null);
 
   const isTV = hasInitialContent
@@ -148,10 +147,6 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
     }
   }
 
-  function handleOverlayClick(e) {
-    if (e.target === overlayRef.current) onClose();
-  }
-
   async function handleCreate() {
     if (!isLoggedIn || !user) return;
     setCreating(true);
@@ -207,9 +202,18 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
   }
 
   return (
-    <div ref={overlayRef} className="auth-modal-overlay" onClick={handleOverlayClick}>
-      <div className="auth-modal">
-        <button className="auth-modal-close" onClick={onClose} aria-label="Close">
+    <div className="auth-modal-overlay" onClick={onClose}>
+      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className="auth-modal-close"
+          aria-label="Close modal"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>

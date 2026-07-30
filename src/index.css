@@ -4294,6 +4294,7 @@ button:focus-visible,
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 16px;
+  pointer-events: auto;
 }
 
 .auth-modal {
@@ -4314,11 +4315,17 @@ button:focus-visible,
   z-index: 50;
   pointer-events: auto;
   color: var(--text-muted);
-  padding: 4px;
+  padding: 8px;
   cursor: pointer;
-  background: none;
+  background: rgba(255, 255, 255, 0.05);
   border: none;
-  transition: color 0.2s, transform 0.2s;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s, transform 0.2s, background 0.2s;
 }
 
 .auth-modal-close:hover {
