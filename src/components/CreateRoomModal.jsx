@@ -211,7 +211,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
 
   return (
     <div
-      className="fixed inset-0 z-[99999] pointer-events-auto bg-zinc-950 sm:bg-black/80 sm:backdrop-blur-sm sm:flex sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-[99999] pointer-events-auto bg-zinc-950 sm:bg-black/80 sm:backdrop-blur-sm sm:flex sm:items-center sm:justify-center sm:p-4 overflow-y-auto"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) {
           e.preventDefault();
@@ -220,7 +220,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
       }}
     >
       <div
-        className="relative w-full h-full sm:h-auto sm:max-w-md bg-zinc-950 sm:bg-zinc-900 sm:rounded-2xl p-4 sm:p-6 sm:shadow-2xl sm:border sm:border-zinc-800 pointer-events-auto overflow-y-auto"
+        className="relative w-full h-full sm:h-auto sm:max-w-md bg-zinc-950 sm:bg-zinc-900 sm:rounded-2xl p-4 sm:p-6 sm:shadow-2xl sm:border sm:border-zinc-800 pointer-events-auto overflow-visible sm:overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6 pt-2 sm:pt-0">
