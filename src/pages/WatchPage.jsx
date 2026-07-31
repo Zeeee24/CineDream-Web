@@ -138,17 +138,13 @@ export default function WatchPage() {
   }, [id, episodesSeason, isMovie]);
 
   useEffect(() => {
-    if (loading) {
-      clearTimeout(loadTimerRef.current);
-      loadTimerRef.current = setTimeout(() => {
-        setLoading(false);
-        setLoadError(false);
-      }, 5000);
-    } else {
-      clearTimeout(loadTimerRef.current);
-    }
-    return () => clearTimeout(loadTimerRef.current);
-  }, [loading, activeServer]);
+    setLoading(true);
+    setLoadError(false);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [activeServer, currentEpisode, episodesSeason]);
 
   useEffect(() => {
     if (loadError) {
