@@ -20,6 +20,7 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
   const roomRef = useRef(null);
   const syncIntervalRef = useRef(null);
   const joinedRef = useRef(false);
+  const leaveRoomRef = useRef(null);
 
   const leaveRoom = useCallback(async () => {
     if (!roomCode || !user) return;
@@ -42,6 +43,8 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
     clearInterval(syncIntervalRef.current);
   }, [roomCode, user]);
 
+  leaveRoomRef.current = leaveRoom;
+
   useEffect(() => {
     if (!roomCode || !user) return;
     const handleUnload = () => {
@@ -59,9 +62,8 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
     window.addEventListener('beforeunload', handleUnload);
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
-      leaveRoom();
     };
-  }, [roomCode, user, leaveRoom]);
+  }, [roomCode, user]);
 
   useEffect(() => {
     if (!roomCode || !user) return;
