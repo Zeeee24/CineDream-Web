@@ -37,6 +37,7 @@ export default function WatchPage() {
   const fallbackTimerRef = useRef(null);
   const progressIntervalRef = useRef(null);
   const syncTimerRef = useRef(null);
+  const serverChangeLockRef = useRef(false);
   const season = isMovie ? null : episodesSeason;
   const episode = isMovie ? null : currentEpisode;
 
@@ -201,12 +202,14 @@ export default function WatchPage() {
   }, [handleBack]);
 
   function switchServer(index) {
+    serverChangeLockRef.current = true;
     setActiveServer(index);
     setLoading(true);
     setLoadError(false);
     setFallbackCountdown(null);
     clearTimeout(loadTimerRef.current);
     clearInterval(fallbackTimerRef.current);
+    setTimeout(() => { serverChangeLockRef.current = false; }, 1000);
   }
 
   function handleEpisodeChange(newSeason, newEpisode) {
@@ -351,8 +354,6 @@ export default function WatchPage() {
               className="player-server-dropdown"
               value={activeServer}
               onChange={(e) => switchServer(Number(e.target.value))}
-              disabled={!isHostParty && searchParams.get('room')}
-              title={!isHostParty && searchParams.get('room') ? 'Only the Host can change the server' : ''}
             >
               {allServers.map((s, i) => (
                 <option key={s.id} value={i} disabled={health[s.id] === false}>
@@ -404,7 +405,13 @@ export default function WatchPage() {
             episode={episode}
             activeServer={activeServer}
             onSync={(s, e, server) => { switchServer(server); }}
-            onServerChange={(server) => { switchServer(server); }}
+            onServerChange={(server) => {
+              if (!serverChangeLockRef.current) {
+                setActiveServer(server);
+                setLoading(true);
+                setLoadError(false);
+              }
+            }}
             onIsHostChange={(host) => setIsHostParty(host)}
             onTimestampSync={(ts) => {
               clearTimeout(syncTimerRef.current);
