@@ -54,7 +54,8 @@ export function toggleWatchlist(item) {
 }
 
 export function isInWatchlist(tmdbId) {
-  return load().some((h) => h.tmdbId === tmdbId);
+  const id = Number(tmdbId);
+  return load().some((h) => Number(h.tmdbId) === id);
 }
 
 export function getWatchlist() {

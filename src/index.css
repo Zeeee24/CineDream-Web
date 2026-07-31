@@ -2810,6 +2810,59 @@ img {
   margin-bottom: 24px;
 }
 
+.mylist-search-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.mylist-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.mylist-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.mylist-search-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mylist-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.mylist-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+}
+
+.mylist-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
 /* ========== EMPTY PAGE ========== */
 .empty-page {
   display: flex;
