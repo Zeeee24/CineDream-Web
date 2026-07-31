@@ -6,7 +6,6 @@ import { formatDetailInfo, getYear, getCertification, getTVCertification } from 
 import { useDevice } from '../hooks/useDevice';
 import ScrollRow from '../components/ScrollRow';
 import TrailerModal from '../components/TrailerModal';
-import CreateRoomModal from '../components/CreateRoomModal';
 import { SkeletonHero } from '../components/Skeleton';
 import { addToHistory } from '../services/watchHistory';
 import { isInWatchlist, toggleWatchlist } from '../services/watchlist';
@@ -22,7 +21,6 @@ export default function Detail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
-  const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [, setListVersion] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
@@ -219,16 +217,6 @@ export default function Detail() {
                 </button>
               )}
               <button
-                className="btn btn-secondary btn-large"
-                onClick={() => setShowCreateRoom(true)}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-                </svg>
-                Watch Party
-              </button>
-              <button
                 className={`btn btn-secondary btn-large ${isInWatchlist(Number(id)) ? 'btn-list-active' : ''}`}
                 onClick={handleToggleList}
               >
@@ -287,16 +275,6 @@ export default function Detail() {
       {showTrailer && trailerKey && (
         <TrailerModal videoKey={trailerKey} onClose={() => setShowTrailer(false)} />
       )}
-
-      <CreateRoomModal
-        isOpen={showCreateRoom}
-        onClose={() => setShowCreateRoom(false)}
-        tmdbId={id}
-        mediaType={type}
-        title={title}
-        posterPath={data.poster_path}
-        seasons={seasons}
-      />
     </div>
   );
 }
