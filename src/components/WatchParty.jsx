@@ -22,16 +22,15 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
   const joinedRef = useRef(false);
 
   const leaveRoom = useCallback(async () => {
-    if (roomCode && user) {
-      const memRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
-      await remove(memRef).catch(() => {});
-      const roomSnap = await get(ref(db, `watchParties/${roomCode}`)).catch(() => null);
-      if (roomSnap && roomSnap.exists()) {
-        const data = roomSnap.val();
-        const remaining = Object.keys(data.members || {}).length;
-        if (remaining === 0) {
-          await remove(ref(db, `watchParties/${roomCode}`)).catch(() => {});
-        }
+    if (!roomCode || !user) return;
+    const memberRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
+    await remove(memberRef).catch(() => {});
+    const roomSnap = await get(ref(db, `watchParties/${roomCode}`)).catch(() => null);
+    if (roomSnap && roomSnap.exists()) {
+      const data = roomSnap.val();
+      const remaining = Object.keys(data.members || {}).length;
+      if (remaining === 0) {
+        await remove(ref(db, `watchParties/${roomCode}`)).catch(() => {});
       }
     }
     setRoomCode('');
@@ -45,7 +44,18 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
 
   useEffect(() => {
     if (!roomCode || !user) return;
-    const handleUnload = () => { leaveRoom(); };
+    const handleUnload = () => {
+      const memberRef = ref(db, `watchParties/${roomCode}/members/${user.uid}`);
+      remove(memberRef).catch(() => {});
+      get(ref(db, `watchParties/${roomCode}`)).then((snap) => {
+        if (snap.exists()) {
+          const data = snap.val();
+          if (Object.keys(data.members || {}).length === 0) {
+            remove(ref(db, `watchParties/${roomCode}`)).catch(() => {});
+          }
+        }
+      }).catch(() => {});
+    };
     window.addEventListener('beforeunload', handleUnload);
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
