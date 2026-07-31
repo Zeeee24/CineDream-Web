@@ -64,6 +64,14 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
   }, [roomCode, user, leaveRoom]);
 
   useEffect(() => {
+    if (!roomCode || !user) return;
+    const heartbeat = setInterval(() => {
+      update(ref(db, `watchParties/${roomCode}/members/${user.uid}`), { lastSeen: Date.now() }).catch(() => {});
+    }, 5000);
+    return () => clearInterval(heartbeat);
+  }, [roomCode, user]);
+
+  useEffect(() => {
     if (!initialRoomCode || !isLoggedIn || !user) return;
 
     async function joinExistingRoom() {
@@ -90,6 +98,7 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
         displayName: userProfile?.displayName || 'Member',
         photoURL: userProfile?.photoURL || '',
         role: 'member',
+        lastSeen: Date.now(),
       });
 
       setRoomCode(initialRoomCode);
@@ -122,6 +131,7 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
         displayName: userProfile?.displayName || 'Member',
         photoURL: userProfile?.photoURL || '',
         role: 'member',
+        lastSeen: Date.now(),
       });
 
       setRoomCode(initialRoomCode);
@@ -150,8 +160,25 @@ export default function WatchParty({ roomCode: initialRoomCode, tmdbId, mediaTyp
         return;
       }
       const data = snap.val();
-      setMembers(data.members || {});
+      const allMembers = data.members || {};
+      const now = Date.now();
+      const activeMembers = {};
+
+      Object.entries(allMembers).forEach(([uid, m]) => {
+        if (m.lastSeen && (now - m.lastSeen) > 10000) {
+          remove(ref(db, `watchParties/${roomCode}/members/${uid}`)).catch(() => {});
+        } else {
+          activeMembers[uid] = m;
+        }
+      });
+
+      setMembers(activeMembers);
       setHostName(data.hostName || '');
+
+      if (Object.keys(activeMembers).length === 0) {
+        remove(ref(db, `watchParties/${roomCode}`)).catch(() => {});
+        return;
+      }
 
       if (user.uid !== data.host && data.activeServer !== undefined && onServerChange && joinedRef.current) {
         onServerChange(data.activeServer);

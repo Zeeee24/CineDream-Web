@@ -175,6 +175,7 @@ export default function CreateRoomModal({ isOpen, onClose, tmdbId, mediaType, ti
             displayName: userProfile?.displayName || 'Host',
             photoURL: userProfile?.photoURL || '',
             role: 'host',
+            lastSeen: Date.now(),
           },
         },
       };

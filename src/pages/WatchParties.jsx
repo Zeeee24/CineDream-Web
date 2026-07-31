@@ -33,7 +33,11 @@ export default function WatchParties() {
         const staleCodes = [];
 
         Object.entries(data).forEach(([code, room]) => {
-          const memberCount = Object.keys(room.members || {}).length;
+          const now2 = Date.now();
+          const activeMembers = Object.entries(room.members || {}).filter(([, m]) => {
+            return m.lastSeen && (now2 - m.lastSeen) < 10000;
+          });
+          const memberCount = activeMembers.length;
           const age = now - (room.createdAt || 0);
           if (memberCount === 0) {
             staleCodes.push(code);
@@ -83,8 +87,10 @@ export default function WatchParties() {
         return;
       }
       const room = snap.val();
-      const memberCount = Object.keys(room.members || {}).length;
-      if (memberCount === 0) {
+      const activeMembers = Object.entries(room.members || {}).filter(([, m]) => {
+        return m.lastSeen && (Date.now() - m.lastSeen) < 10000;
+      });
+      if (activeMembers.length === 0) {
         setJoinError('Room is empty');
         return;
       }
